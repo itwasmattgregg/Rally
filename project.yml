@@ -1,0 +1,60 @@
+# Optional: generate the Xcode project with XcodeGen (`brew install xcodegen && xcodegen`)
+name: ScoreKeep
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    watchOS: "10.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  ScoreKeep:
+    type: application
+    platform: watchOS
+    sources:
+      - path: WatchApp
+      - path: Shared
+      - path: Assets.xcassets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.ScoreKeep
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: ScoreKeep
+        INFOPLIST_KEY_WKWatchOnly: YES
+    dependencies:
+      - target: ScoreKeepWidgetExtension
+    entitlements:
+      path: ScoreKeepWatch.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.example.ScoreKeep
+
+  ScoreKeepWidgetExtension:
+    type: app-extension
+    platform: watchOS
+    sources:
+      - path: WidgetExtension
+      - path: Shared/ScoreDefaults.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.ScoreKeep.widget
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Score
+        INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: ScoreKeepWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.example.ScoreKeep
+
+schemes:
+  ScoreKeep:
+    build:
+      targets:
+        ScoreKeep: all
+        ScoreKeepWidgetExtension: all
+    run:
+      config: Debug

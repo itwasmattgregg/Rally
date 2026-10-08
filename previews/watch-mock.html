@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ScoreKeep Watch Previews</title>
+  <style>
+    :root {
+      --field-top: rgb(13, 18, 23);
+      --field-bottom: rgb(23, 28, 33);
+      --home: rgb(56, 235, 184);
+      --away: rgb(255, 140, 71);
+      --home-glow: rgba(26, 115, 97, 0.55);
+      --away-glow: rgba(140, 64, 31, 0.55);
+      --ink: rgba(255, 255, 255, 0.92);
+      --ink-muted: rgba(255, 255, 255, 0.45);
+      --hairline: rgba(255, 255, 255, 0.12);
+      --reset-fill: rgba(255, 255, 255, 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #1a1c1e;
+      color: #eee;
+      font-family: "SF Pro Rounded", "Avenir Next Rounded", "Nunito", system-ui, sans-serif;
+      padding: 40px 32px 64px;
+    }
+
+    h1 {
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .sub {
+      color: rgba(255,255,255,0.45);
+      font-size: 14px;
+      margin-bottom: 36px;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      align-items: flex-start;
+    }
+
+    .shot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .label {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.02em;
+    }
+
+    /* Apple Watch–ish bezel */
+    .watch {
+      width: 198px;
+      height: 242px;
+      border-radius: 42px;
+      padding: 10px;
+      background: linear-gradient(160deg, #3a3a3c, #111113 45%, #2a2a2c);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.08),
+        0 24px 48px rgba(0,0,0,0.55),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+      position: relative;
+    }
+
+    .watch::before {
+      content: "";
+      position: absolute;
+      right: -7px;
+      top: 62px;
+      width: 5px;
+      height: 36px;
+      border-radius: 0 3px 3px 0;
+      background: #2c2c2e;
+      box-shadow: 0 48px 0 #2c2c2e;
+    }
+
+    .screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 34px;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(180deg, var(--field-top), var(--field-bottom));
+    }
+
+    .glow {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      pointer-events: none;
+    }
+
+    .glow span {
+      flex: 1;
+      filter: blur(18px);
+      opacity: 0.85;
+    }
+
+    .glow .h { background: radial-gradient(circle at 50% 55%, var(--home-glow), transparent 70%); }
+    .glow .a { background: radial-gradient(circle at 50% 55%, var(--away-glow), transparent 70%); }
+
+    .ui {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 8px 6px 6px;
+    }
+
+    .top {
+      display: grid;
+      grid-template-columns: 26px 1fr 26px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .icon-btn, .reset {
+      background: var(--reset-fill);
+      border: 1px solid var(--hairline);
+      color: rgba(255,255,255,0.75);
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-btn {
+      width: 26px;
+      height: 22px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .reset {
+      justify-self: center;
+      gap: 4px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .boards {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+    }
+
+    .team {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2px 2px 4px;
+      min-width: 0;
+    }
+
+    .name {
+      font-size: 10px;
+      font-weight: 650;
+      letter-spacing: 0.04em;
+      margin-bottom: 2px;
+    }
+
+    .team.home .name { color: var(--home); }
+    .team.away .name { color: var(--away); }
+
+    .underline {
+      width: 14px;
+      height: 2px;
+      border-radius: 999px;
+      margin-top: 2px;
+      margin-bottom: 2px;
+      background: var(--home);
+    }
+
+    .team.away .underline { background: transparent; }
+
+    .score {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 44px;
+      line-height: 1;
+      color: var(--ink);
+      text-shadow: 0 0 18px var(--home-glow);
+      letter-spacing: -0.03em;
+    }
+
+    .team.away .score { text-shadow: 0 0 18px var(--away-glow); }
+
+    .score.double { font-size: 36px; }
+
+    .minus {
+      width: 28px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--reset-fill);
+      border: 1px solid rgba(56, 235, 184, 0.35);
+      color: var(--home);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .team.away .minus {
+      border-color: rgba(255, 140, 71, 0.35);
+      color: var(--away);
+    }
+
+    .divider {
+      width: 1px;
+      background: var(--hairline);
+      margin: 12px 0;
+    }
+
+    /* Always On / reduced luminance */
+    .aod .glow { display: none; }
+    .aod .name { color: var(--ink-muted) !important; }
+    .aod .score {
+      color: rgba(255,255,255,0.7);
+      text-shadow: none;
+    }
+    .aod .minus {
+      color: var(--ink-muted);
+      border-color: rgba(255,255,255,0.15);
+      opacity: 0.7;
+    }
+    .aod .reset, .aod .icon-btn {
+      color: var(--ink-muted);
+      opacity: 0.85;
+    }
+    .aod .underline { opacity: 0; }
+
+    .pulse .team.home .score {
+      transform: scale(1.08);
+      text-shadow: 0 0 28px var(--home-glow);
+    }
+
+    .note {
+      margin-top: 40px;
+      max-width: 640px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: rgba(255,255,255,0.4);
+    }
+  </style>
+</head>
+<body>
+  <h1>ScoreKeep</h1>
+  <p class="sub">Watch UI mock from the app’s design tokens (not a device capture).</p>
+
+  <div class="row">
+    <div class="shot" id="shot-main">
+      <div class="watch">
+        <div class="screen">
+          <div class="glow"><span class="h"></span><span class="a"></span></div>
+          <div class="ui">
+            <div class="top">
+              <div class="icon-btn">✎</div>
+              <div class="reset">↺ Reset</div>
+              <div></div>
+            </div>
+            <div class="boards">
+              <div class="team home">
+                <div class="name">HOME</div>
+                <div class="underline"></div>
+                <div class="score">3</div>
+                <div class="minus">−</div>
+              </div>
+              <div class="divider"></div>
+              <div class="team away">
+                <div class="name">AWAY</div>
+                <div class="underline"></div>
+                <div class="score">2</div>
+                <div class="minus">−</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="label">Active game</div>
+    </div>
+
+    <div class="shot" id="shot-pulse">
+      <div class="watch pulse">
+        <div class="screen">
+          <div class="glow"><span class="h"></span><span class="a"></span></div>
+          <div class="ui">
+            <div class="top">
+              <div class="icon-btn">✎</div>
+              <div class="reset">↺ Reset</div>
+              <div></div>
+            </div>
+            <div class="boards">
+              <div class="team home">
+                <div class="name">HOME</div>
+                <div class="underline"></div>
+                <div class="score">4</div>
+                <div class="minus">−</div>
+              </div>
+              <div class="divider"></div>
+              <div class="team away">
+                <div class="name">AWAY</div>
+                <div class="underline"></div>
+                <div class="score">2</div>
+                <div class="minus">−</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="label">After tap (+1 home)</div>
+    </div>
+
+    <div class="shot" id="shot-aod">
+      <div class="watch aod">
+        <div class="screen">
+          <div class="glow"><span class="h"></span><span class="a"></span></div>
+          <div class="ui">
+            <div class="top">
+              <div class="icon-btn">✎</div>
+              <div class="reset">↺ Reset</div>
+              <div></div>
+            </div>
+            <div class="boards">
+              <div class="team home">
+                <div class="name">HOME</div>
+                <div class="underline"></div>
+                <div class="score double">12</div>
+                <div class="minus">−</div>
+              </div>
+              <div class="divider"></div>
+              <div class="team away">
+                <div class="name">AWAY</div>
+                <div class="underline"></div>
+                <div class="score double">9</div>
+                <div class="minus">−</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="label">Always On (wrist down)</div>
+    </div>
+  </div>
+
+  <p class="note">
+    Built to match ScoreKeep’s charcoal field, mint home / ember away accents, rounded heavy scores,
+    top Reset, pencil for names, and minus chips. Real Watch rendering will use SF Rounded and system haptics.
+  </p>
+</body>
+</html>
