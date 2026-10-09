@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct ScoreKeepApp: App {
+struct RallyApp: App {
     @State private var board = ScoreBoard()
 
     var body: some Scene {

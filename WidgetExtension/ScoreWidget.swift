@@ -37,7 +37,7 @@ struct ScoreWidgetView: View {
         switch family {
         case .accessoryRectangular:
             VStack(alignment: .leading, spacing: 2) {
-                Text("SCOREKEEP")
+                Text("RALLY")
                     .font(.system(.caption2, design: .rounded).weight(.bold))
                 Text("\(entry.home)  –  \(entry.away)")
                     .font(.system(.title3, design: .rounded).weight(.heavy))
@@ -47,7 +47,7 @@ struct ScoreWidgetView: View {
         case .accessoryCorner:
             Text("\(entry.home)–\(entry.away)")
                 .font(.system(.body, design: .rounded).weight(.bold))
-                .widgetLabel { Text("Score") }
+                .widgetLabel { Text("Rally") }
                 .containerBackground(for: .widget) { Color.clear }
         case .accessoryCircular:
             ZStack {
@@ -58,7 +58,7 @@ struct ScoreWidgetView: View {
             }
             .containerBackground(for: .widget) { Color.clear }
         case .accessoryInline:
-            Text("Score \(entry.home)–\(entry.away)")
+            Text("Rally \(entry.home)–\(entry.away)")
                 .containerBackground(for: .widget) { Color.clear }
         default:
             Text("\(entry.home)–\(entry.away)")
@@ -68,8 +68,8 @@ struct ScoreWidgetView: View {
     }
 }
 
-struct ScoreKeepWidget: Widget {
-    let kind = "ScoreKeepWidget"
+struct RallyWidget: Widget {
+    let kind = "RallyWidget"
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: ScoreProvider()) { entry in
@@ -87,8 +87,8 @@ struct ScoreKeepWidget: Widget {
 }
 
 @main
-struct ScoreKeepWidgetBundle: WidgetBundle {
+struct RallyWidgetBundle: WidgetBundle {
     var body: some Widget {
-        ScoreKeepWidget()
+        RallyWidget()
     }
 }

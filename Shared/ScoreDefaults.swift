@@ -3,7 +3,7 @@ import Foundation
 enum ScoreDefaults {
     /// On-watch App Group for the complication only (not phone sync).
     /// Set the same ID on the Watch app + Widget targets in Xcode.
-    static let suiteName = "group.com.example.ScoreKeep"
+    static let suiteName = "group.com.example.Rally"
 
     static let homeKey = "homeScore"
     static let awayKey = "awayScore"

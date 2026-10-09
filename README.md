@@ -1,4 +1,4 @@
-# ScoreKeep
+# Rally
 
 Watch-only scoreboard for two teams — big tap targets, mint vs ember, no iPhone app.
 
@@ -23,7 +23,7 @@ Watch-only scoreboard for two teams — big tap targets, mint vs ember, no iPhon
 | `WKExtendedRuntimeSession` (self-care / mindfulness) | Frontmost for a limited time | Ends when user leaves your app | Wrong category for scoring; App Review risk |
 | Smart Stack / complication | Glanceable | **Yes** | Best coexistence path |
 
-**Practical recommendation:** keep ScoreKeep in the **Dock**, add the **rectangular complication** or Smart Stack widget, and open it only when you need to bump a point.
+**Practical recommendation:** keep Rally in the **Dock**, add the **rectangular complication** or Smart Stack widget, and open it only when you need to bump a point.
 
 ## Open in Xcode (Mac required)
 
@@ -32,20 +32,20 @@ This environment can’t compile watchOS binaries. On a Mac:
 ### Option A — New project, drop sources in (simplest)
 
 1. Xcode → **File → New → Project → watchOS → App**
-2. Product Name: `ScoreKeep`
+2. Product Name: `Rally`
 3. Choose **Watch App** (no companion iOS app)
 4. Replace generated Swift with `WatchApp/*` + `Shared/*`
 5. Optional: **File → New → Target → Widget Extension** (watchOS), use `WidgetExtension/ScoreWidget.swift` + `Shared/ScoreDefaults.swift`
-6. If you added the widget: enable **App Groups** on Watch + Widget → `group.com.example.ScoreKeep` (update `ScoreDefaults.suiteName` to match). This stays on-watch only — it feeds the complication, not an iPhone.
+6. If you added the widget: enable **App Groups** on Watch + Widget → `group.com.example.Rally` (update `ScoreDefaults.suiteName` to match). This stays on-watch only — it feeds the complication, not an iPhone.
 7. Run on a Watch simulator or device
 
 ### Option B — XcodeGen
 
 ```bash
 brew install xcodegen
-cd ScoreKeep
+cd Rally
 xcodegen
-open ScoreKeep.xcodeproj
+open Rally.xcodeproj
 ```
 
 Then set your Team / unique bundle IDs (and App Group if using the widget).
