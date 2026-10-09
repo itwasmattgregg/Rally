@@ -65,7 +65,7 @@ final class ScoreBoard {
         defaults.set(homeScore, forKey: ScoreDefaults.homeKey)
         defaults.set(awayScore, forKey: ScoreDefaults.awayKey)
         #if canImport(WidgetKit)
-        WidgetCenter.shared.reloadTimelines(ofKind: "RallyWidget")
+        WidgetCenter.shared.reloadTimelines(ofKind: "ScoreWidget")
         #endif
     }
 }

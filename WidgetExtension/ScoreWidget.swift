@@ -44,11 +44,13 @@ struct ScoreWidgetView: View {
                     .invalidatableContent()
             }
             .containerBackground(for: .widget) { Color.clear }
+        #if os(watchOS)
         case .accessoryCorner:
             Text("\(entry.home)–\(entry.away)")
                 .font(.system(.body, design: .rounded).weight(.bold))
                 .widgetLabel { Text("Rally") }
                 .containerBackground(for: .widget) { Color.clear }
+        #endif
         case .accessoryCircular:
             ZStack {
                 AccessoryWidgetBackground()
@@ -68,8 +70,8 @@ struct ScoreWidgetView: View {
     }
 }
 
-struct RallyWidget: Widget {
-    let kind = "RallyWidget"
+struct ScoreWidget: Widget {
+    let kind = "ScoreWidget"
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: ScoreProvider()) { entry in
@@ -77,18 +79,23 @@ struct RallyWidget: Widget {
         }
         .configurationDisplayName("Score")
         .description("Glanceable score while you wear the watch.")
-        .supportedFamilies([
+        .supportedFamilies(Self.families)
+    }
+
+    private static var families: [WidgetFamily] {
+        #if os(watchOS)
+        [
             .accessoryInline,
             .accessoryCircular,
             .accessoryRectangular,
             .accessoryCorner
-        ])
-    }
-}
-
-@main
-struct RallyWidgetBundle: WidgetBundle {
-    var body: some Widget {
-        RallyWidget()
+        ]
+        #else
+        [
+            .accessoryInline,
+            .accessoryCircular,
+            .accessoryRectangular
+        ]
+        #endif
     }
 }
