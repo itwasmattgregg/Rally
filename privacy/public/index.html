@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rally Privacy Policy</title>
+    <meta
+      name="description"
+      content="Privacy policy for Rally, the Apple Watch scoreboard app."
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --field: #0d1217;
+        --ink: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.55);
+        --mint: #38ebb8;
+        --ember: #ff8c47;
+        --line: rgba(255, 255, 255, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+        background:
+          radial-gradient(circle at 20% 10%, rgba(56, 235, 184, 0.12), transparent 40%),
+          radial-gradient(circle at 80% 20%, rgba(255, 140, 71, 0.1), transparent 35%),
+          var(--field);
+        color: var(--ink);
+        line-height: 1.55;
+      }
+
+      main {
+        max-width: 40rem;
+        margin: 0 auto;
+        padding: 3rem 1.25rem 4rem;
+      }
+
+      .brand {
+        font-size: 0.75rem;
+        letter-spacing: 0.18em;
+        font-weight: 700;
+        color: var(--mint);
+        margin: 0 0 0.75rem;
+      }
+
+      h1 {
+        font-size: clamp(1.8rem, 4vw, 2.4rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin: 0 0 0.5rem;
+      }
+
+      .updated {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin: 0 0 2rem;
+      }
+
+      h2 {
+        font-size: 1.05rem;
+        margin: 2rem 0 0.6rem;
+        color: var(--ember);
+      }
+
+      p,
+      li {
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      ul {
+        padding-left: 1.2rem;
+      }
+
+      a {
+        color: var(--mint);
+      }
+
+      hr {
+        border: 0;
+        border-top: 1px solid var(--line);
+        margin: 2rem 0;
+      }
+
+      footer {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="brand">RALLY</p>
+      <h1>Privacy Policy</h1>
+      <p class="updated">Last updated: October 20, 2026</p>
+
+      <p>
+        Rally is a watch-only Apple Watch app for keeping score during matches and
+        optionally recording a volleyball workout. This policy explains what data
+        Rally uses and how it is handled.
+      </p>
+
+      <h2>Data Rally uses</h2>
+      <ul>
+        <li>
+          <strong>Scores and team names.</strong> These stay on your Apple Watch.
+          Rally stores them in an on-device App Group so the scoreboard and Smart
+          Stack widget can show the same score.
+        </li>
+        <li>
+          <strong>Health and fitness data.</strong> If you start a volleyball
+          session, Rally uses Apple HealthKit to read heart rate and active energy
+          during the workout, and to save the finished workout (including the
+          final score as workout metadata) to Apple Health.
+        </li>
+      </ul>
+
+      <h2>Data Rally does not collect</h2>
+      <p>
+        Rally does not create an account, does not send your score or Health data
+        to our servers, and does not sell or share personal data with third-party
+        advertisers or data brokers.
+      </p>
+
+      <h2>Where data is stored</h2>
+      <p>
+        Scoreboard data remains on your watch. HealthKit data is managed by Apple
+        Health on your devices according to your Apple ID and Health settings.
+        You can revoke Health access for Rally in the Health app or watch Settings
+        at any time.
+      </p>
+
+      <h2>Permissions</h2>
+      <p>
+        Rally asks for Health permission only when you start a volleyball workout.
+        You can decline and keep using the scoreboard without recording a workout.
+      </p>
+
+      <h2>Children</h2>
+      <p>
+        Rally is not directed at children under 13 and does not knowingly collect
+        personal information from children.
+      </p>
+
+      <h2>Changes</h2>
+      <p>
+        If this policy changes, the date at the top of this page will be updated.
+        Continued use of Rally after a change means you accept the updated policy.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions about this policy or Rally privacy practices:
+        <a href="mailto:privacy@itwasmattgregg.com">privacy@itwasmattgregg.com</a>
+      </p>
+
+      <hr />
+      <footer>Rally for Apple Watch · It Was Matt Gregg</footer>
+    </main>
+  </body>
+</html>

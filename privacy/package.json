@@ -1,0 +1,12 @@
+{
+  "name": "rally-privacy",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "deploy:claim": "wrangler deploy --temporary",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^4.151.3"
+  }
+}
