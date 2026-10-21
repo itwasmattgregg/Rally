@@ -5,6 +5,7 @@ struct MatchSessionView: View {
     @Environment(MatchSession.self) private var match
 
     @State private var confirmEnd = false
+    @State private var showWorkoutTypes = false
 
     var body: some View {
         ZStack {
@@ -16,10 +17,22 @@ struct MatchSessionView: View {
             .ignoresSafeArea()
 
             VStack(spacing: 8) {
-                Text("VOLLEYBALL")
-                    .font(.system(.caption2, design: .rounded).weight(.bold))
+                Button {
+                    showWorkoutTypes = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(match.activityType.rallyDisplayName.uppercased())
+                            .font(.system(.caption2, design: .rounded).weight(.bold))
+                            .tracking(1.2)
+                        if !match.isRunning {
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 8, weight: .bold))
+                        }
+                    }
                     .foregroundStyle(ScoreTheme.inkMuted)
-                    .tracking(1.2)
+                }
+                .buttonStyle(.plain)
+                .disabled(match.isRunning || match.isStarting || match.isEnding)
 
                 if match.isRunning {
                     Text(MatchSession.clockString(match.elapsed))
@@ -67,7 +80,14 @@ struct MatchSessionView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 10)
         }
-        .confirmationDialog("End the volleyball workout?", isPresented: $confirmEnd, titleVisibility: .visible) {
+        .sheet(isPresented: $showWorkoutTypes) {
+            WorkoutTypeSheet()
+        }
+        .confirmationDialog(
+            "End the \(match.activityType.rallyDisplayName.lowercased()) workout?",
+            isPresented: $confirmEnd,
+            titleVisibility: .visible
+        ) {
             Button("End Workout", role: .destructive) {
                 match.endMatch(
                     homeScore: board.homeScore,
@@ -111,7 +131,7 @@ struct MatchSessionView: View {
             confirmEnd = true
         } else {
             WatchHaptics.matchStart()
-            Task { await match.startVolleyball() }
+            Task { await match.startWorkout() }
         }
     }
 }

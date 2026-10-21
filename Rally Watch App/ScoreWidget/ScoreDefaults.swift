@@ -9,6 +9,7 @@ enum ScoreDefaults {
     static let awayKey = "awayScore"
     static let homeNameKey = "homeName"
     static let awayNameKey = "awayName"
+    static let workoutActivityTypeKey = "workoutActivityType"
 
     static var store: UserDefaults {
         UserDefaults(suiteName: suiteName) ?? .standard

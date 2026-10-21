@@ -1,10 +1,11 @@
 import HealthKit
 
-/// A volleyball workout that records behind the scoreboard.
+/// A HealthKit workout that records behind the scoreboard.
 @MainActor
 @Observable
 final class MatchSession: NSObject {
     private let healthStore = HKHealthStore()
+    private let defaults: UserDefaults
     private var session: HKWorkoutSession?
     private var builder: HKLiveWorkoutBuilder?
     private var clock: Timer?
@@ -19,9 +20,24 @@ final class MatchSession: NSObject {
     var heartRate: Double?
     var errorMessage: String?
 
+    var activityType: HKWorkoutActivityType {
+        didSet { persistActivityType() }
+    }
+
     var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
 
-    func startVolleyball() async {
+    init(suiteName: String = ScoreDefaults.suiteName) {
+        defaults = UserDefaults(suiteName: suiteName) ?? .standard
+        let raw = defaults.object(forKey: ScoreDefaults.workoutActivityTypeKey) as? UInt
+        if let raw, let saved = HKWorkoutActivityType(rawValue: raw) {
+            activityType = saved
+        } else {
+            activityType = .volleyball
+        }
+        super.init()
+    }
+
+    func startWorkout() async {
         guard !isRunning, !isStarting, session == nil else { return }
         guard isAvailable else {
             errorMessage = "Health data isn’t available on this watch."
@@ -33,7 +49,7 @@ final class MatchSession: NSObject {
 
         do {
             try await authorize()
-            try await beginSession()
+            try await beginSession(activityType: activityType)
         } catch {
             session?.end()
             session = nil
@@ -66,6 +82,10 @@ final class MatchSession: NSObject {
         return String(format: "%d:%02d", minutes, seconds)
     }
 
+    private func persistActivityType() {
+        defaults.set(activityType.rawValue, forKey: ScoreDefaults.workoutActivityTypeKey)
+    }
+
     private func authorize() async throws {
         let share: Set<HKSampleType> = [HKObjectType.workoutType()]
         let read: Set<HKObjectType> = [
@@ -78,10 +98,13 @@ final class MatchSession: NSObject {
         }
     }
 
-    private func beginSession() async throws {
+    private func beginSession(activityType: HKWorkoutActivityType) async throws {
         let configuration = HKWorkoutConfiguration()
-        configuration.activityType = .volleyball
-        configuration.locationType = .indoor
+        configuration.activityType = activityType
+        configuration.locationType = activityType.rallyLocationType
+        if let swimmingLocation = activityType.rallySwimmingLocationType {
+            configuration.swimmingLocationType = swimmingLocation
+        }
 
         let session = try HKWorkoutSession(healthStore: healthStore, configuration: configuration)
         let builder = session.associatedWorkoutBuilder()

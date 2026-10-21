@@ -14,7 +14,7 @@ struct RallyApp: App {
     }
 }
 
-/// Scoreboard on the first page. Swipe up for the volleyball workout.
+/// Scoreboard on the first page. Swipe up for the HealthKit workout.
 private struct MatchPager: View {
     @State private var page = 0
 
