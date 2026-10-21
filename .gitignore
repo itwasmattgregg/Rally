@@ -1,0 +1,20 @@
+# Xcode user state
+xcuserdata/
+*.xcuserstate
+
+# Accidental Organizer / export drops in the tree
+**/Assets.xcassets/**/*.ipa
+**/Assets.xcassets/**/DistributionSummary.plist
+**/Assets.xcassets/**/ExportOptions.plist
+**/Assets.xcassets/**/Packaging.log
+**/Assets.xcassets/Rally Watch App */
+
+# Local / build noise
+.DS_Store
+DerivedData/
+build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
