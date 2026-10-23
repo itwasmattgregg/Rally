@@ -7,10 +7,16 @@ import WatchConnectivity
 final class WatchConnectivityBridge: NSObject {
     private(set) var isReachable = false
     private(set) var isActivated = false
+    /// False when the iOS companion isn't installed on the paired phone (common in Simulator
+    /// if Rally wasn't installed on that iPhone, or Watch wasn't embedded/paired).
+    private(set) var isCompanionAppInstalled = false
     private(set) var lastError: String?
 
     var onAck: ((String, UInt64) -> Void)?
     var onSnapshot: ((GameState) -> Void)?
+
+    /// True when WC can usefully talk to the phone companion.
+    var canRelay: Bool { isActivated && isCompanionAppInstalled }
 
     override init() {
         super.init()
@@ -24,10 +30,24 @@ final class WatchConnectivityBridge: NSObject {
         session.activate()
     }
 
+    func refreshCompanionState() {
+        guard WCSession.isSupported() else { return }
+        let session = WCSession.default
+        isActivated = session.activationState == .activated
+        isReachable = session.isReachable
+        if #available(watchOS 6.0, *) {
+            isCompanionAppInstalled = session.isCompanionAppInstalled
+        } else {
+            isCompanionAppInstalled = true
+        }
+    }
+
     func send(_ event: ScoreEvent) {
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
         guard session.activationState == .activated else { return }
+        refreshCompanionState()
+        guard isCompanionAppInstalled else { return }
 
         do {
             let data = try JSONEncoder.rally.encode(event)
@@ -59,6 +79,8 @@ final class WatchConnectivityBridge: NSObject {
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
         guard session.activationState == .activated else { return }
+        refreshCompanionState()
+        guard isCompanionAppInstalled else { return }
         do {
             let data = try JSONEncoder.rally.encode(state)
             try session.updateApplicationContext([
@@ -66,15 +88,19 @@ final class WatchConnectivityBridge: NSObject {
                 RallyWC.stateKey: data
             ])
         } catch {
+            // 7018 = companion not installed; don't surface as a hard failure while scoring alone.
+            let nsError = error as NSError
+            if nsError.domain == WCErrorDomain, nsError.code == 7018 {
+                isCompanionAppInstalled = false
+                return
+            }
             lastError = error.localizedDescription
         }
     }
 
     func requestSync() {
-        guard WCSession.isSupported() else { return }
-        let session = WCSession.default
-        guard session.activationState == .activated, session.isReachable else { return }
-        session.sendMessage([RallyWC.kindKey: RallyWC.kindRequestSync], replyHandler: { [weak self] reply in
+        guard canRelay, WCSession.default.isReachable else { return }
+        WCSession.default.sendMessage([RallyWC.kindKey: RallyWC.kindRequestSync], replyHandler: { [weak self] reply in
             Task { @MainActor in
                 self?.handleReply(reply)
             }
@@ -86,12 +112,19 @@ final class WatchConnectivityBridge: NSObject {
     }
 
     private func pushContext(with eventData: Data) {
+        refreshCompanionState()
+        guard isCompanionAppInstalled else { return }
         do {
             try WCSession.default.updateApplicationContext([
                 RallyWC.kindKey: RallyWC.kindEvent,
                 RallyWC.eventKey: eventData
             ])
         } catch {
+            let nsError = error as NSError
+            if nsError.domain == WCErrorDomain, nsError.code == 7018 {
+                isCompanionAppInstalled = false
+                return
+            }
             lastError = error.localizedDescription
         }
     }
@@ -121,8 +154,7 @@ extension WatchConnectivityBridge: WCSessionDelegate {
         error: Error?
     ) {
         Task { @MainActor in
-            self.isActivated = activationState == .activated
-            self.isReachable = session.isReachable
+            self.refreshCompanionState()
             if let error {
                 self.lastError = error.localizedDescription
             }
@@ -131,7 +163,13 @@ extension WatchConnectivityBridge: WCSessionDelegate {
 
     nonisolated func sessionReachabilityDidChange(_ session: WCSession) {
         Task { @MainActor in
-            self.isReachable = session.isReachable
+            self.refreshCompanionState()
+        }
+    }
+
+    nonisolated func sessionCompanionAppInstalledDidChange(_ session: WCSession) {
+        Task { @MainActor in
+            self.refreshCompanionState()
         }
     }
 

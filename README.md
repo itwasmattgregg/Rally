@@ -2,7 +2,7 @@
 
 Watch scorekeeper for two unbounded scores (mint / ember), with an optional offline iPhone/iPad companion for court displays.
 
-**Watch stays independent** — installable and usable without the iOS app. The companion is an add-on for live public boards.
+**Watch stays independent** — install and score with no iOS app. Install the iPhone/iPad companion too when you want linked court displays (phone hosts/relays; iPads join over local Bonjour).
 
 ## Architecture (v1 multi-display)
 

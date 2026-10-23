@@ -77,7 +77,7 @@ extension PhoneWatchRelay: WCSessionDelegate {
         error: Error?
     ) {
         Task { @MainActor in
-            self.authority.noteWatchReachable(session.isReachable)
+            self.noteSession(session)
         }
     }
 
@@ -88,8 +88,22 @@ extension PhoneWatchRelay: WCSessionDelegate {
 
     nonisolated func sessionReachabilityDidChange(_ session: WCSession) {
         Task { @MainActor in
-            self.authority.noteWatchReachable(session.isReachable)
+            self.noteSession(session)
         }
+    }
+
+    nonisolated func sessionWatchStateDidChange(_ session: WCSession) {
+        Task { @MainActor in
+            self.noteSession(session)
+        }
+    }
+
+    @MainActor
+    private func noteSession(_ session: WCSession) {
+        authority.noteWatchLink(
+            watchAppInstalled: session.isWatchAppInstalled,
+            reachable: session.isReachable
+        )
     }
 
     nonisolated func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {

@@ -10,7 +10,7 @@
 		8E5652D5307D6F5B0033F1D4 /* ScoreWidgetExtension.appex in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8E6E8BB63078829000562200 /* ScoreWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8E6E8BB93078829000562200 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E6E8BB83078829000562200 /* WidgetKit.framework */; };
 		8E6E8BBB3078829000562200 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E6E8BBA3078829000562200 /* SwiftUI.framework */; };
-		8E7A0002307E000100562200 /* Rally Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 8E6E8B8E3078813200562200 /* Rally Watch App.app */; platformFilters = (iphoneos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		8E7A0002307E000100562200 /* Rally Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 8E6E8B8E3078813200562200 /* Rally Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +53,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		8E8A2001307F100100562200 /* Fix Watch Simulator Embed */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Scripts/fix-watch-sim-embed.sh",
+			);
+			name = "Fix Watch Simulator Embed";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "\"${SRCROOT}/Scripts/fix-watch-sim-embed.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXFileReference section */
 		8E6E8B8E3078813200562200 /* Rally Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Rally Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -236,6 +259,7 @@
 				8E7A0008307E000100562200 /* Frameworks */,
 				8E7A0009307E000100562200 /* Resources */,
 				8E7A0003307E000100562200 /* Embed Watch Content */,
+				8E8A2001307F100100562200 /* Fix Watch Simulator Embed */,
 			);
 			buildRules = (
 			);
@@ -352,9 +376,6 @@
 		};
 		8E7A0005307E000100562200 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			platformFilters = (
-				iphoneos,
-			);
 			target = 8E6E8B8D3078813200562200 /* Rally Watch App */;
 			targetProxy = 8E7A0004307E000100562200 /* PBXContainerItemProxy */;
 		};
@@ -648,6 +669,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = A6GDPWEW4E;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = RallyContainer/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -679,6 +701,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = A6GDPWEW4E;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = RallyContainer/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;

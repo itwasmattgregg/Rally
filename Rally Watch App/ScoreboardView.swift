@@ -24,7 +24,12 @@ struct ScoreboardView: View {
             VStack(spacing: 0) {
                 resetBar
 
-                if board.phoneOutOfRange {
+                if board.phoneAppMissing {
+                    Text("Phone app not linked")
+                        .font(.system(.caption2, design: .rounded).weight(.semibold))
+                        .foregroundStyle(ScoreTheme.inkMuted)
+                        .padding(.bottom, 2)
+                } else if board.phoneOutOfRange {
                     Text("Phone out of range")
                         .font(.system(.caption2, design: .rounded).weight(.semibold))
                         .foregroundStyle(ScoreTheme.away)

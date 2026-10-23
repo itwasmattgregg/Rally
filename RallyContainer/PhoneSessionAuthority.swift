@@ -110,12 +110,18 @@ final class PhoneSessionAuthority {
         connectedDisplays = count
     }
 
-    func noteWatchReachable(_ reachable: Bool) {
-        watchConnected = reachable
-        if !reachable && isHosting {
+    /// - Parameters:
+    ///   - watchAppInstalled: Watch companion is installed on the paired watch.
+    ///   - reachable: WC interactive messaging is available right now.
+    func noteWatchLink(watchAppInstalled: Bool, reachable: Bool) {
+        watchConnected = watchAppInstalled && reachable
+        guard isHosting else { return }
+        if !watchAppInstalled {
+            statusMessage = "Waiting for Watch · code \(sessionCode)"
+        } else if reachable {
+            statusMessage = "Watch linked · code \(sessionCode)"
+        } else {
             statusMessage = "Watch out of range · code \(sessionCode)"
-        } else if isHosting {
-            statusMessage = "Hosting · code \(sessionCode)"
         }
     }
 }

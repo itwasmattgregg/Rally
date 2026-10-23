@@ -9,7 +9,10 @@ import WidgetKit
 final class ScoreBoard {
     private(set) var state: GameState
     private(set) var canUndo = false
+    /// Companion is installed but WC reports not reachable.
     private(set) var phoneOutOfRange = false
+    /// Paired phone doesn't have the iOS Rally app (or Simulator counterpart link isn't set up).
+    private(set) var phoneAppMissing = false
 
     private var undoStack = ScoreUndoStack()
     private let defaults: UserDefaults
@@ -112,7 +115,9 @@ final class ScoreBoard {
     }
 
     func refreshReachability() {
-        phoneOutOfRange = bridge.isActivated && !bridge.isReachable
+        bridge.refreshCompanionState()
+        phoneAppMissing = bridge.isActivated && !bridge.isCompanionAppInstalled
+        phoneOutOfRange = bridge.canRelay && !bridge.isReachable
     }
 
     private func setLabel(sideId: String, label: String) {
