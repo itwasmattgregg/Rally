@@ -132,46 +132,22 @@ struct ScoreboardView: View {
 
     private var resetBar: some View {
         ZStack {
-            HStack(spacing: 6) {
-                Button {
-                    confirmReset = true
-                } label: {
-                    Label("Reset", systemImage: "arrow.counterclockwise")
-                        .font(.system(.caption2, design: .rounded).weight(.semibold))
-                        .foregroundStyle(isLuminanceReduced ? ScoreTheme.inkMuted : ScoreTheme.ink.opacity(0.75))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule()
-                                .fill(ScoreTheme.resetFill)
-                                .overlay(Capsule().strokeBorder(ScoreTheme.hairline, lineWidth: 1))
-                        )
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Reset scores")
-
-                Button {
-                    board.undo()
-                    WatchHaptics.scoreDown()
-                } label: {
-                    Image(systemName: "arrow.uturn.backward")
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(
-                            board.canUndo
-                                ? (isLuminanceReduced ? ScoreTheme.inkMuted : ScoreTheme.ink.opacity(0.8))
-                                : ScoreTheme.inkMuted.opacity(0.35)
-                        )
-                        .frame(width: 26, height: 22)
-                        .background(
-                            Capsule()
-                                .fill(ScoreTheme.resetFill)
-                                .overlay(Capsule().strokeBorder(ScoreTheme.hairline, lineWidth: 1))
-                        )
-                }
-                .buttonStyle(.plain)
-                .disabled(!board.canUndo)
-                .accessibilityLabel("Undo last score")
+            Button {
+                confirmReset = true
+            } label: {
+                Label("Reset", systemImage: "arrow.counterclockwise")
+                    .font(.system(.caption2, design: .rounded).weight(.semibold))
+                    .foregroundStyle(isLuminanceReduced ? ScoreTheme.inkMuted : ScoreTheme.ink.opacity(0.75))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(ScoreTheme.resetFill)
+                            .overlay(Capsule().strokeBorder(ScoreTheme.hairline, lineWidth: 1))
+                    )
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Reset scores")
 
             HStack {
                 Button {
