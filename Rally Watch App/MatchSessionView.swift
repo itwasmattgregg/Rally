@@ -95,6 +95,7 @@ struct MatchSessionView: View {
                     homeName: board.homeName,
                     awayName: board.awayName
                 )
+                board.noteSessionEnded()
                 WatchHaptics.matchStop()
             }
             Button("Cancel", role: .cancel) {}
@@ -131,7 +132,12 @@ struct MatchSessionView: View {
             confirmEnd = true
         } else {
             WatchHaptics.matchStart()
-            Task { await match.startWorkout() }
+            Task {
+                await match.startWorkout()
+                if match.isRunning {
+                    board.noteSessionStarted()
+                }
+            }
         }
     }
 }

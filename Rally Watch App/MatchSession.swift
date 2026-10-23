@@ -26,8 +26,9 @@ final class MatchSession: NSObject {
 
     var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
 
-    init(suiteName: String = ScoreDefaults.suiteName) {
-        defaults = UserDefaults(suiteName: suiteName) ?? .standard
+    init(suiteName: String? = nil) {
+        let resolvedSuite = suiteName ?? ScoreDefaults.suiteName
+        defaults = UserDefaults(suiteName: resolvedSuite) ?? .standard
         let raw = defaults.object(forKey: ScoreDefaults.workoutActivityTypeKey) as? UInt
         if let raw, let saved = HKWorkoutActivityType(rawValue: raw) {
             activityType = saved

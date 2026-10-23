@@ -1,12 +1,29 @@
 import SwiftUI
 
-/// iOS delivery stub for the watch-only App Store package.
-/// Never launched on iPhone (`LSApplicationLaunchProhibited`).
 @main
 struct RallyContainerApp: App {
+    @State private var authority = PhoneSessionAuthority()
+    @State private var advertiser = BoardAdvertiser()
+    @State private var browser = BoardBrowser()
+    @State private var watchRelay: PhoneWatchRelay?
+
     var body: some Scene {
         WindowGroup {
-            EmptyView()
+            CompanionRootView()
+                .environment(authority)
+                .environment(advertiser)
+                .environment(browser)
+                .task {
+                    if watchRelay == nil {
+                        let relay = PhoneWatchRelay(authority: authority)
+                        relay.onStateChanged = { state in
+                            advertiser.broadcast(state)
+                        }
+                        watchRelay = relay
+                    }
+                    authority.bootstrapHostIfNeeded()
+                    advertiser.start(authority: authority)
+                }
         }
     }
 }

@@ -1,54 +1,44 @@
 # Rally
 
-Watch-only scoreboard for two teams — big tap targets, mint vs ember, no iPhone app.
+Watch scorekeeper for two unbounded scores (mint / ember), with an optional offline iPhone/iPad companion for court displays.
 
-## What you get
+**Watch stays independent** — installable and usable without the iOS app. The companion is an add-on for live public boards.
 
-- **Tap a score** → +1 (primary action) with spring pulse + haptic
-- **Minus control** under each score → −1
-- **Reset** centered at the top (with confirmation)
-- **Pencil** → rename HOME / AWAY (short labels)
-- **Digital Crown** → +/− the last team you touched
-- **Always On Display** → dims glows / ink when luminance is reduced
-- **Complication / Smart Stack widget** → glance `12–9` without opening the app
+## Architecture (v1 multi-display)
 
-## Can it stay open during Apple Fitness?
+Watch → WatchConnectivity → iPhone (authority + Bonjour relay) → Network.framework → iPad display(s).
 
-**Not while Fitness owns the workout.** watchOS allows only one active `HKWorkoutSession`. If Workout / Fitness is tracking an activity, your app cannot also claim that session, and the system will keep bringing Fitness forward on wrist raise.
+- Phone/iPad UI is **display-only** (no scoring controls).
+- No internet / cloud on court.
+- Background on Watch via **HKWorkout** session.
 
-| Approach | Keeps scoreboard frontmost? | Works *with* Fitness? | Notes |
-|---|---|---|---|
-| Normal app | Only while you’re in it | Yes (you leave Fitness to score) | Dock + complication make this fast |
-| `HKWorkoutSession` in *your* app | Yes, on wrist raise | **No** — conflicts with Fitness | Fine if *you* are the workout app |
-| `WKExtendedRuntimeSession` (self-care / mindfulness) | Frontmost for a limited time | Ends when user leaves your app | Wrong category for scoring; App Review risk |
-| Smart Stack / complication | Glanceable | **Yes** | Best coexistence path |
-
-**Practical recommendation:** keep Rally in the **Dock**, add the **rectangular complication** or Smart Stack widget, and open it only when you need to bump a point.
-
-## Open in Xcode (Mac required)
-
-This environment can’t compile watchOS binaries. On a Mac:
-
-### Option A — New project, drop sources in (simplest)
-
-1. Xcode → **File → New → Project → watchOS → App**
-2. Product Name: `Rally`
-3. Choose **Watch App** (no companion iOS app)
-4. Replace generated Swift with `WatchApp/*` + `Shared/*`
-5. Optional: **File → New → Target → Widget Extension** (watchOS), use `WidgetExtension/ScoreWidget.swift` + `Shared/ScoreDefaults.swift`
-6. If you added the widget: enable **App Groups** on Watch + Widget → `group.com.example.Rally` (update `ScoreDefaults.suiteName` to match). This stays on-watch only — it feeds the complication, not an iPhone.
-7. Run on a Watch simulator or device
-
-### Option B — XcodeGen
+## Open in Xcode
 
 ```bash
-brew install xcodegen
-cd Rally
-xcodegen
 open Rally.xcodeproj
 ```
 
-Then set your Team / unique bundle IDs (and App Group if using the widget).
+### Run companion (iPhone / iPad)
+
+1. Scheme: **Rally**
+2. Destination: iPhone or iPad simulator/device
+3. Run — Host mode (default on phone) shows scores + session code/QR and advertises `_rallyboard._tcp`
+4. On iPad (or switch the segmented control to **Join**): enter the 4-character code or pick a nearby board
+
+### Run Watch scorekeeper
+
+1. Scheme: **Rally Watch App**
+2. Destination: Watch simulator/device
+3. +/- / undo on the board; swipe up for workout start/stop (keeps scoring available in background)
+
+Simulator tip: run **Rally** and **Rally Watch App** as separate schemes. Watch is embedded into the iOS app on **device** archives (`iphoneos`); simulators use the Watch scheme directly so packaging stays independent.
+
+### Optional XcodeGen
+
+```bash
+brew install xcodegen
+xcodegen   # regenerates from project.yml; checked-in .xcodeproj is source of truth day-to-day
+```
 
 ## Design notes
 
@@ -58,5 +48,5 @@ Then set your Team / unique bundle IDs (and App Group if using the widget).
 
 ## Requirements
 
-- Xcode 15+
-- watchOS 10+
+- Xcode 15+ (developed with Xcode 26)
+- watchOS 10+ / iOS 18+

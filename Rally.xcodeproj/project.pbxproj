@@ -10,7 +10,7 @@
 		8E5652D5307D6F5B0033F1D4 /* ScoreWidgetExtension.appex in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8E6E8BB63078829000562200 /* ScoreWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8E6E8BB93078829000562200 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E6E8BB83078829000562200 /* WidgetKit.framework */; };
 		8E6E8BBB3078829000562200 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E6E8BBA3078829000562200 /* SwiftUI.framework */; };
-		8E7A0002307E000100562200 /* Rally Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 8E6E8B8E3078813200562200 /* Rally Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		8E7A0002307E000100562200 /* Rally Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 8E6E8B8E3078813200562200 /* Rally Watch App.app */; platformFilters = (iphoneos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -117,6 +117,11 @@
 			path = RallyContainer;
 			sourceTree = "<group>";
 		};
+		8E8A1001307F000100562200 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -151,6 +156,7 @@
 			children = (
 				8E7A000D307E000100562200 /* RallyContainer */,
 				8E6E8B923078813200562200 /* Rally Watch App */,
+				8E8A1001307F000100562200 /* Shared */,
 				8E6E8BB73078829000562200 /* Frameworks */,
 				8E6E8B893078813200562200 /* Products */,
 			);
@@ -194,6 +200,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				8E6E8B923078813200562200 /* Rally Watch App */,
+				8E8A1001307F000100562200 /* Shared */,
 			);
 			name = "Rally Watch App";
 			packageProductDependencies = (
@@ -237,6 +244,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				8E7A000D307E000100562200 /* RallyContainer */,
+				8E8A1001307F000100562200 /* Shared */,
 			);
 			name = Rally;
 			packageProductDependencies = (
@@ -344,6 +352,9 @@
 		};
 		8E7A0005307E000100562200 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilters = (
+				iphoneos,
+			);
 			target = 8E6E8B8D3078813200562200 /* Rally Watch App */;
 			targetProxy = 8E7A0004307E000100562200 /* PBXContainerItemProxy */;
 		};
@@ -408,8 +419,8 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
-				SUPPORTS_MACCATALYST = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos watchsimulator watchos";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -467,8 +478,8 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
-				SUPPORTS_MACCATALYST = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos watchsimulator watchos";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -490,7 +501,8 @@
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Rally saves the volleyball workout and final score to Health.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKBackgroundModes = "workout-processing";
-				INFOPLIST_KEY_WKWatchOnly = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ItWasMattGregg.Rally;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -530,7 +542,8 @@
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Rally saves the volleyball workout and final score to Health.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKBackgroundModes = "workout-processing";
-				INFOPLIST_KEY_WKWatchOnly = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ItWasMattGregg.Rally;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -631,6 +644,7 @@
 		8E7A000A307E000100562200 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = RallyContainer/RallyCompanion.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = A6GDPWEW4E;
@@ -661,6 +675,7 @@
 		8E7A000B307E000100562200 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = RallyContainer/RallyCompanion.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = A6GDPWEW4E;
