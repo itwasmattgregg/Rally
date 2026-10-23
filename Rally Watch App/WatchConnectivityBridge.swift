@@ -1,21 +1,18 @@
 import Foundation
 import WatchConnectivity
 
-/// Best-effort Watch → phone relay. Scoring stays local if the companion is absent.
+/// One-way Watch → phone relay. The Watch never applies phone GameState.
 @MainActor
 @Observable
 final class WatchConnectivityBridge: NSObject {
     private(set) var isReachable = false
     private(set) var isActivated = false
-    /// False when the iOS companion isn't installed on the paired phone (common in Simulator
-    /// if Rally wasn't installed on that iPhone, or Watch wasn't embedded/paired).
     private(set) var isCompanionAppInstalled = false
     private(set) var lastError: String?
 
+    /// Delivery receipt only (eventId, revision). Never carries board mutations back.
     var onAck: ((String, UInt64) -> Void)?
-    var onSnapshot: ((GameState) -> Void)?
 
-    /// True when WC can usefully talk to the phone companion.
     var canRelay: Bool { isActivated && isCompanionAppInstalled }
 
     override init() {
@@ -42,6 +39,7 @@ final class WatchConnectivityBridge: NSObject {
         }
     }
 
+    /// Send a score mutation to the phone. Phone may ack; Watch ignores any board payload.
     func send(_ event: ScoreEvent) {
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
@@ -59,23 +57,24 @@ final class WatchConnectivityBridge: NSObject {
             if session.isReachable {
                 session.sendMessage(payload, replyHandler: { [weak self] reply in
                     Task { @MainActor in
-                        self?.handleReply(reply)
+                        self?.handleAck(reply)
                     }
                 }, errorHandler: { [weak self] error in
                     Task { @MainActor in
                         self?.lastError = error.localizedDescription
-                        self?.pushContext(with: data)
+                        self?.queueEvent(data)
                     }
                 })
             } else {
-                pushContext(with: data)
+                queueEvent(data)
             }
         } catch {
             lastError = error.localizedDescription
         }
     }
 
-    func publishSnapshot(_ state: GameState) {
+    /// Rare catch-up for displays (e.g. reset). Still one-way; Watch does not read replies as state.
+    func publishDisplayMirror(_ state: GameState) {
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
         guard session.activationState == .activated else { return }
@@ -88,7 +87,6 @@ final class WatchConnectivityBridge: NSObject {
                 RallyWC.stateKey: data
             ])
         } catch {
-            // 7018 = companion not installed; don't surface as a hard failure while scoring alone.
             let nsError = error as NSError
             if nsError.domain == WCErrorDomain, nsError.code == 7018 {
                 isCompanionAppInstalled = false
@@ -98,22 +96,7 @@ final class WatchConnectivityBridge: NSObject {
         }
     }
 
-    func requestSync() {
-        guard canRelay, WCSession.default.isReachable else { return }
-        WCSession.default.sendMessage([RallyWC.kindKey: RallyWC.kindRequestSync], replyHandler: { [weak self] reply in
-            Task { @MainActor in
-                self?.handleReply(reply)
-            }
-        }, errorHandler: { [weak self] error in
-            Task { @MainActor in
-                self?.lastError = error.localizedDescription
-            }
-        })
-    }
-
-    private func pushContext(with eventData: Data) {
-        refreshCompanionState()
-        guard isCompanionAppInstalled else { return }
+    private func queueEvent(_ eventData: Data) {
         do {
             try WCSession.default.updateApplicationContext([
                 RallyWC.kindKey: RallyWC.kindEvent,
@@ -129,21 +112,13 @@ final class WatchConnectivityBridge: NSObject {
         }
     }
 
-    private func handleReply(_ reply: [String: Any]) {
-        if let kind = reply[RallyWC.kindKey] as? String, kind == RallyWC.kindSnapshot,
-           let data = reply[RallyWC.stateKey] as? Data,
-           let state = try? JSONDecoder.rally.decode(GameState.self, from: data) {
-            onSnapshot?(state)
-            return
-        }
-        if let eventId = reply[RallyWC.ackEventIdKey] as? String,
-           let revision = reply[RallyWC.revisionKey] as? UInt64 {
+    private func handleAck(_ reply: [String: Any]) {
+        // Intentionally ignore any `state` / snapshot keys — one-way scoring.
+        if let eventId = reply[RallyWC.ackEventIdKey] as? String {
+            let revision = reply[RallyWC.revisionKey] as? UInt64 ?? 0
             onAck?(eventId, revision)
         }
-        if let data = reply[RallyWC.stateKey] as? Data,
-           let state = try? JSONDecoder.rally.decode(GameState.self, from: data) {
-            onSnapshot?(state)
-        }
+        refreshCompanionState()
     }
 }
 
@@ -173,26 +148,16 @@ extension WatchConnectivityBridge: WCSessionDelegate {
         }
     }
 
-    nonisolated func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
-        Task { @MainActor in
-            self.handleReply(message)
-        }
-    }
+    // Phone should not drive the Watch board. Ignore inbound WC payloads.
+    nonisolated func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {}
 
     nonisolated func session(
         _ session: WCSession,
         didReceiveMessage message: [String: Any],
         replyHandler: @escaping ([String: Any]) -> Void
     ) {
-        Task { @MainActor in
-            self.handleReply(message)
-            replyHandler([:])
-        }
+        replyHandler([:])
     }
 
-    nonisolated func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
-        Task { @MainActor in
-            self.handleReply(applicationContext)
-        }
-    }
+    nonisolated func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {}
 }

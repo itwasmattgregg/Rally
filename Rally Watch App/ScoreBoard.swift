@@ -5,6 +5,7 @@ import Observation
 import WidgetKit
 #endif
 
+/// Watch is the sole scorer. Phone (if installed) is a one-way display sink — never writes back.
 @Observable
 final class ScoreBoard {
     private(set) var state: GameState
@@ -46,11 +47,9 @@ final class ScoreBoard {
         fresh.sides[1].score = max(0, defaults.integer(forKey: ScoreDefaults.awayKey))
         state = fresh
 
-        resolvedBridge.onAck = { [weak self] eventId, revision in
-            self?.applyAck(eventId: eventId, revision: revision)
-        }
-        resolvedBridge.onSnapshot = { [weak self] snapshot in
-            self?.adoptPhoneSnapshot(snapshot)
+        // Acks are delivery receipts only — never apply phone GameState onto the Watch board.
+        resolvedBridge.onAck = { [weak self] _, _ in
+            self?.refreshReachability()
         }
         refreshReachability()
     }
@@ -64,7 +63,6 @@ final class ScoreBoard {
         guard let previous = undoStack.pop() else { return }
         canUndo = undoStack.count > 0
 
-        // Invert the last applied score mutation locally.
         switch previous.op {
         case .increment:
             if let sideId = previous.sideId {
@@ -74,19 +72,12 @@ final class ScoreBoard {
             if let sideId = previous.sideId {
                 state.mutateScore(sideId: sideId, delta: abs(previous.delta ?? 1))
             }
-        case .setLabel:
-            // Labels are not on the undo stack for v1 taps; ignore.
-            break
-        case .undo, .start, .end:
+        case .setLabel, .undo, .start, .end:
             break
         }
         state.lastEventId = previous.eventId
         persist()
-
-        let event = ScoreEvent.make(op: .undo, gameId: state.gameId)
-        bridge.send(event)
-        bridge.publishSnapshot(state)
-        refreshReachability()
+        relay(ScoreEvent.make(op: .undo, gameId: state.gameId))
     }
 
     func reset() {
@@ -95,23 +86,23 @@ final class ScoreBoard {
         undoStack.clear()
         canUndo = false
         persist()
-        bridge.publishSnapshot(state)
+        // Catch-up mirror for displays (one-way); no event type for full reset in v1.
+        bridge.publishDisplayMirror(state)
+        refreshReachability()
     }
 
     func noteSessionStarted() {
         let event = ScoreEvent.make(op: .start, gameId: state.gameId)
         state.markStarted(eventId: event.eventId)
         persist()
-        bridge.send(event)
-        bridge.publishSnapshot(state)
+        relay(event)
     }
 
     func noteSessionEnded() {
         let event = ScoreEvent.make(op: .end, gameId: state.gameId)
         state.markEnded(eventId: event.eventId)
         persist()
-        bridge.send(event)
-        bridge.publishSnapshot(state)
+        relay(event)
     }
 
     func refreshReachability() {
@@ -123,9 +114,7 @@ final class ScoreBoard {
     private func setLabel(sideId: String, label: String) {
         state.setLabel(sideId: sideId, label: label)
         persist()
-        let event = ScoreEvent.make(op: .setLabel, gameId: state.gameId, sideId: sideId, label: label)
-        bridge.send(event)
-        bridge.publishSnapshot(state)
+        relay(ScoreEvent.make(op: .setLabel, gameId: state.gameId, sideId: sideId, label: label))
     }
 
     private func applyScore(sideId: String, delta: Int) {
@@ -136,24 +125,11 @@ final class ScoreBoard {
         undoStack.push(event)
         canUndo = true
         persist()
+        relay(event)
+    }
+
+    private func relay(_ event: ScoreEvent) {
         bridge.send(event)
-        bridge.publishSnapshot(state)
-        refreshReachability()
-    }
-
-    private func applyAck(eventId: String, revision: UInt64) {
-        if state.lastEventId == eventId || revision >= state.revision {
-            state.revision = max(state.revision, revision)
-        }
-        refreshReachability()
-    }
-
-    private func adoptPhoneSnapshot(_ snapshot: GameState) {
-        // Phone is authority when companion is in the loop; adopt if same game or phone is ahead.
-        if snapshot.gameId == state.gameId || snapshot.revision > state.revision {
-            state = snapshot
-            persist()
-        }
         refreshReachability()
     }
 

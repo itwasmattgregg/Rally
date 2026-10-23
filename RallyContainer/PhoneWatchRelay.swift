@@ -1,7 +1,8 @@
 import Foundation
 import WatchConnectivity
 
-/// Receives WatchConnectivity events and feeds the phone session authority.
+/// Applies Watch → phone events for display / Bonjour fan-out.
+/// Never pushes GameState back to the Watch (scoring is one-way).
 @MainActor
 @Observable
 final class PhoneWatchRelay: NSObject {
@@ -24,49 +25,31 @@ final class PhoneWatchRelay: NSObject {
     private func handle(_ message: [String: Any], replyHandler: (([String: Any]) -> Void)?) {
         let kind = message[RallyWC.kindKey] as? String
 
-        if kind == RallyWC.kindRequestSync {
-            replyWithSnapshot(replyHandler)
+        // Events are the scoring path.
+        if let data = message[RallyWC.eventKey] as? Data,
+           let event = try? JSONDecoder.rally.decode(ScoreEvent.self, from: data) {
+            let state = authority.apply(event)
+            onStateChanged?(state)
+            // Ack only — do not include GameState or the Watch will fight itself.
+            replyHandler?([
+                RallyWC.kindKey: RallyWC.kindAck,
+                RallyWC.ackEventIdKey: event.eventId,
+                RallyWC.revisionKey: state.revision
+            ])
             return
         }
 
+        // Optional one-way mirror (e.g. reset) for displays when no event was sent.
         if kind == RallyWC.kindSnapshot || message[RallyWC.stateKey] != nil,
            let data = message[RallyWC.stateKey] as? Data,
            let state = try? JSONDecoder.rally.decode(GameState.self, from: data) {
             authority.adoptSnapshot(state)
             onStateChanged?(authority.state)
-            replyWithSnapshot(replyHandler)
-            return
-        }
-
-        if let data = message[RallyWC.eventKey] as? Data,
-           let event = try? JSONDecoder.rally.decode(ScoreEvent.self, from: data) {
-            let state = authority.apply(event)
-            onStateChanged?(state)
-            var reply: [String: Any] = [
-                RallyWC.kindKey: RallyWC.kindAck,
-                RallyWC.ackEventIdKey: event.eventId,
-                RallyWC.revisionKey: state.revision
-            ]
-            if let encoded = try? JSONEncoder.rally.encode(state) {
-                reply[RallyWC.stateKey] = encoded
-            }
-            replyHandler?(reply)
+            replyHandler?([RallyWC.kindKey: RallyWC.kindAck])
             return
         }
 
         replyHandler?([:])
-    }
-
-    private func replyWithSnapshot(_ replyHandler: (([String: Any]) -> Void)?) {
-        guard let encoded = try? JSONEncoder.rally.encode(authority.state) else {
-            replyHandler?([:])
-            return
-        }
-        replyHandler?([
-            RallyWC.kindKey: RallyWC.kindSnapshot,
-            RallyWC.stateKey: encoded,
-            RallyWC.revisionKey: authority.state.revision
-        ])
     }
 }
 
