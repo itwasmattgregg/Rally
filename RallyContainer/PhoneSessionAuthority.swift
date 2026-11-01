@@ -15,10 +15,18 @@ final class PhoneSessionAuthority {
 
     private var undoStack = ScoreUndoStack()
     private var appliedEventIds = Set<String>()
+    private static let sessionCodeKey = "rally.sessionCode"
 
     init() {
         state = GameState.fresh()
-        sessionCode = RallyWire.makeSessionCode()
+        // Stable across launches so Nearby on iPad matches the phone screen.
+        if let saved = UserDefaults.standard.string(forKey: Self.sessionCodeKey),
+           saved.count == 4 {
+            sessionCode = saved.uppercased()
+        } else {
+            sessionCode = RallyWire.makeSessionCode()
+            UserDefaults.standard.set(sessionCode, forKey: Self.sessionCodeKey)
+        }
     }
 
     func bootstrapHostIfNeeded() {
@@ -32,6 +40,7 @@ final class PhoneSessionAuthority {
 
     func rotateSessionCode() {
         sessionCode = RallyWire.makeSessionCode()
+        UserDefaults.standard.set(sessionCode, forKey: Self.sessionCodeKey)
         statusMessage = "Hosting · code \(sessionCode)"
     }
 

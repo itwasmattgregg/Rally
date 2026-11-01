@@ -2,8 +2,7 @@ import SwiftUI
 
 /// Single iOS/iPadOS app: phone hosts/relays; iPad (default) joins as display.
 struct CompanionRootView: View {
-    @Environment(PhoneSessionAuthority.self) private var authority
-    @State private var mode: Mode
+    @Binding var mode: Mode
 
     enum Mode: String, CaseIterable, Identifiable {
         case host
@@ -15,11 +14,6 @@ struct CompanionRootView: View {
             case .join: "Join"
             }
         }
-    }
-
-    init() {
-        let defaultMode: Mode = UIDevice.current.userInterfaceIdiom == .pad ? .join : .host
-        _mode = State(initialValue: defaultMode)
     }
 
     var body: some View {
