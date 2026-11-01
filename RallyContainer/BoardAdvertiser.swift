@@ -16,6 +16,7 @@ final class BoardAdvertiser {
 
     func start(authority: PhoneSessionAuthority) {
         self.authority = authority
+        // Restart so the published name/TXT always match the on-screen code.
         stop()
 
         do {
@@ -23,7 +24,7 @@ final class BoardAdvertiser {
             parameters.includePeerToPeer = true
             let listener = try NWListener(using: parameters)
             listener.service = NWListener.Service(
-                name: "Rally-\(authority.sessionCode)",
+                name: RallyWire.serviceName(for: authority.sessionCode),
                 type: RallyWire.bonjourType,
                 txtRecord: txtRecord(for: authority)
             )
@@ -169,7 +170,7 @@ final class BoardAdvertiser {
     private func refreshTXT() {
         guard let authority, let listener else { return }
         listener.service = NWListener.Service(
-            name: "Rally-\(authority.sessionCode)",
+            name: RallyWire.serviceName(for: authority.sessionCode),
             type: RallyWire.bonjourType,
             txtRecord: txtRecord(for: authority)
         )
@@ -180,7 +181,7 @@ final class BoardAdvertiser {
         txt["v"] = "\(RallyWire.protocolVersion)"
         txt["gameId"] = authority.state.gameId
         txt["revision"] = "\(authority.state.revision)"
-        txt["code"] = authority.sessionCode
+        txt["code"] = authority.sessionCode.uppercased()
         return txt
     }
 }

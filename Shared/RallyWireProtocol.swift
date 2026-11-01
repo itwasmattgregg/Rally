@@ -5,6 +5,8 @@ enum RallyWire {
     /// Bonjour service type for phone advertiser / iPad browser.
     static let bonjourType = "_rallyboard._tcp"
     static let bonjourDomain = "local."
+    /// Service name prefix — iPad parses the code from `Rally-ABCD`.
+    static let serviceNamePrefix = "Rally-"
 
     enum MessageType: String, Codable, Sendable {
         case hello
@@ -23,10 +25,25 @@ enum RallyWire {
         var reason: String?
     }
 
-    /// 4-character join code shown on phone + matched from Bonjour TXT.
+    /// 4-character join code shown on phone + matched from Bonjour name/TXT.
     static func makeSessionCode() -> String {
         let alphabet = Array("ABCDEFGHJKLMNPQRSTUVWXYZ23456789")
         return String((0..<4).map { _ in alphabet.randomElement()! })
+    }
+
+    static func serviceName(for code: String) -> String {
+        "\(serviceNamePrefix)\(code.uppercased())"
+    }
+
+    /// Prefer code embedded in the Bonjour service name; fall back to TXT.
+    static func code(fromServiceName name: String, txtCode: String?) -> String {
+        if name.uppercased().hasPrefix(serviceNamePrefix.uppercased()) {
+            let suffix = String(name.dropFirst(serviceNamePrefix.count))
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .uppercased()
+            if suffix.count == 4 { return suffix }
+        }
+        return (txtCode ?? "").trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
     }
 
     static func encode(_ envelope: Envelope) throws -> Data {

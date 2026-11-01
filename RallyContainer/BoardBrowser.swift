@@ -7,7 +7,7 @@ import Observation
 @Observable
 final class BoardBrowser {
     struct NearbyBoard: Identifiable, Equatable {
-        var id: String { "\(name)-\(code)" }
+        var id: String { code.isEmpty ? name : code }
         var name: String
         var code: String
         var gameId: String
@@ -37,12 +37,13 @@ final class BoardBrowser {
         parameters.includePeerToPeer = true
         let browser = NWBrowser(for: descriptor, using: parameters)
 
-        browser.stateUpdateHandler = { [weak self] state in
+        browser.stateUpdateHandler = { [weak self] browseState in
             Task { @MainActor in
-                switch state {
+                switch browseState {
                 case .ready:
                     self?.isBrowsing = true
                     self?.lastError = nil
+                    self?.statusMessage = "Looking for boards…"
                 case .failed(let error):
                     self?.isBrowsing = false
                     self?.lastError = error.localizedDescription
@@ -67,16 +68,17 @@ final class BoardBrowser {
         browser?.cancel()
         browser = nil
         isBrowsing = false
+        nearby = []
     }
 
     func join(code: String) {
         preferredCode = code.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-        if let match = nearby.first(where: { $0.code.uppercased() == preferredCode }) {
+        if let match = nearby.first(where: { $0.code == preferredCode }) {
             connect(to: match)
             return
         }
         statusMessage = "Waiting for code \(preferredCode ?? "")…"
-        startBrowsing()
+        if !isBrowsing { startBrowsing() }
     }
 
     func join(_ board: NearbyBoard) {
@@ -99,34 +101,45 @@ final class BoardBrowser {
     }
 
     private func ingest(_ results: Set<NWBrowser.Result>) {
-        var boards: [NearbyBoard] = []
+        var byCode: [String: NearbyBoard] = [:]
         for result in results {
             guard case let .service(name: name, type: _, domain: _, interface: _) = result.endpoint else { continue }
-            var code = ""
+            var txtCode: String?
             var gameId = ""
             if case let .bonjour(txt) = result.metadata {
-                code = txt["code"] ?? ""
+                txtCode = txt["code"]
                 gameId = txt["gameId"] ?? ""
             }
-            boards.append(NearbyBoard(name: name, code: code, gameId: gameId, endpoint: result.endpoint))
+            let code = RallyWire.code(fromServiceName: name, txtCode: txtCode)
+            guard code.count == 4 else { continue }
+            // Newest browse result wins for a given code (drops stale TXT ghosts).
+            byCode[code] = NearbyBoard(
+                name: RallyWire.serviceName(for: code),
+                code: code,
+                gameId: gameId,
+                endpoint: result.endpoint
+            )
         }
-        nearby = boards.sorted { $0.name < $1.name }
+        nearby = byCode.values.sorted { $0.code < $1.code }
 
         if let preferredCode,
-           let match = boards.first(where: { $0.code.uppercased() == preferredCode }) {
+           let match = nearby.first(where: { $0.code == preferredCode }) {
             connect(to: match)
         } else if let preferredGameId,
-                  let match = boards.first(where: { $0.gameId == preferredGameId }) {
+                  let match = nearby.first(where: { $0.gameId == preferredGameId }) {
             connect(to: match)
         }
     }
 
     private func connect(to board: NearbyBoard) {
+        // Avoid tearing down a good live connection to the same board.
+        if isConnected, preferredCode == board.code, connection != nil { return }
+
         disconnect()
         preferredCode = board.code
         preferredGameId = board.gameId
         isReconnecting = false
-        statusMessage = "Connecting…"
+        statusMessage = "Connecting to \(board.code)…"
 
         let parameters = NWParameters.tcp
         parameters.includePeerToPeer = true
