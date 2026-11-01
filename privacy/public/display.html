@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rally · Display the score on iPad</title>
+    <meta
+      name="description"
+      content="How to use Rally’s iOS companion app to show Watch scores on a phone board and court-facing iPad — offline."
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --field: #0d1217;
+        --ink: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.55);
+        --mint: #38ebb8;
+        --ember: #ff8c47;
+        --line: rgba(255, 255, 255, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+        background:
+          radial-gradient(circle at 20% 10%, rgba(56, 235, 184, 0.12), transparent 40%),
+          radial-gradient(circle at 80% 20%, rgba(255, 140, 71, 0.1), transparent 35%),
+          var(--field);
+        color: var(--ink);
+        line-height: 1.55;
+      }
+
+      main {
+        max-width: 40rem;
+        margin: 0 auto;
+        padding: 3rem 1.25rem 4rem;
+      }
+
+      .site-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1.25rem;
+        margin: 0 0 2rem;
+        font-size: 0.9rem;
+      }
+
+      .site-nav a {
+        color: var(--muted);
+        text-decoration: none;
+      }
+
+      .site-nav a:hover {
+        color: var(--mint);
+      }
+
+      .site-nav a[aria-current="page"] {
+        color: var(--mint);
+      }
+
+      .brand {
+        font-size: 0.75rem;
+        letter-spacing: 0.18em;
+        font-weight: 700;
+        color: var(--mint);
+        margin: 0 0 0.75rem;
+      }
+
+      h1 {
+        font-size: clamp(1.8rem, 4vw, 2.4rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin: 0 0 0.5rem;
+      }
+
+      .lede {
+        color: var(--muted);
+        font-size: 1.05rem;
+        margin: 0 0 2rem;
+      }
+
+      h2 {
+        font-size: 1.05rem;
+        margin: 2rem 0 0.6rem;
+        color: var(--ember);
+      }
+
+      ol {
+        padding-left: 1.2rem;
+        margin: 0.5rem 0 0;
+      }
+
+      ol > li {
+        margin: 0.65rem 0;
+      }
+
+      p,
+      li {
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      ul {
+        padding-left: 1.2rem;
+      }
+
+      .flow {
+        margin: 1rem 0 0;
+        padding: 0.9rem 1rem;
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 0.95rem;
+      }
+
+      .flow strong {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      a {
+        color: var(--mint);
+      }
+
+      hr {
+        border: 0;
+        border-top: 1px solid var(--line);
+        margin: 2rem 0;
+      }
+
+      footer {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav class="site-nav" aria-label="Site">
+        <a href="./display.html" aria-current="page">Display on iPad</a>
+        <a href="./index.html">Privacy</a>
+      </nav>
+
+      <p class="brand">RALLY</p>
+      <h1>Display the score on iPad</h1>
+      <p class="lede">
+        Score on Apple Watch. Use the iPhone companion when you want a bigger
+        board — including a court-facing iPad — with no internet on the court.
+      </p>
+
+      <h2>Why use the iOS companion?</h2>
+      <p>
+        Rally on Apple Watch works on its own. You can keep two scores, bump
+        them up or down, and play without installing anything on iPhone or iPad.
+        There is no sport picker and no win logic — just two numbers that can
+        climb as high as you need.
+      </p>
+      <p>
+        Install the iOS companion when you want the score somewhere people can
+        see it from across the court:
+      </p>
+      <ul>
+        <li>
+          <strong>Phone board</strong> — your paired iPhone shows the live
+          score while you keep scoring on the Watch.
+        </li>
+        <li>
+          <strong>iPad display</strong> — put a larger board on the sideline by
+          joining the phone’s Host session from the iPad app (QR or short code).
+        </li>
+        <li>
+          <strong>Offline on court</strong> — linking stays local. You do not
+          need venue Wi‑Fi or a cloud account for the scoreboard path.
+        </li>
+      </ul>
+      <p>
+        The companion is for linking displays. Scoring stays on the Watch.
+      </p>
+
+      <h2>How to show the score on an iPad</h2>
+      <p class="flow">
+        <strong>Watch</strong> scores → <strong>iPhone Host</strong> (relay +
+        board) → <strong>iPad Join</strong> (court display)
+      </p>
+      <ol>
+        <li>
+          <strong>Score on your Watch.</strong> Start a Rally session as usual.
+          The Watch remains the place you tap points.
+        </li>
+        <li>
+          <strong>Open Rally on your iPhone and Host.</strong> The phone shows
+          the live board and a QR code / short join code for nearby displays.
+          Keep Bluetooth and Wi‑Fi on so devices can find each other; you still
+          do not need internet.
+        </li>
+        <li>
+          <strong>On the iPad, open Rally and Join.</strong> Scan the phone’s
+          QR code, or enter the code / pick the nearby session. The iPad becomes
+          a full-screen scoreboard — display only.
+        </li>
+        <li>
+          <strong>Leave the phone on the floor if you need to.</strong> It may
+          lock while Hosting; the session should keep feeding the iPad. Keep the
+          iPad awake so the court board stays visible.
+        </li>
+      </ol>
+      <p>
+        If the iPad disconnects, Join again with the same QR or code. Extra
+        iPads can Join the same Host if you want more than one board.
+      </p>
+
+      <h2>What Rally does not do</h2>
+      <ul>
+        <li>No accounts or cloud score sync for the court display path.</li>
+        <li>No sport rules, games, sets, or automatic winners.</li>
+        <li>No scoring controls on the phone or iPad in this path — Watch only.</li>
+      </ul>
+
+      <hr />
+      <footer>
+        Rally for Apple Watch ·
+        <a href="./index.html">Privacy Policy</a>
+        · It Was Matt Gregg
+      </footer>
+    </main>
+  </body>
+</html>

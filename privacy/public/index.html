@@ -87,6 +87,27 @@
         margin: 2rem 0;
       }
 
+      .site-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1.25rem;
+        margin: 0 0 2rem;
+        font-size: 0.9rem;
+      }
+
+      .site-nav a {
+        color: var(--muted);
+        text-decoration: none;
+      }
+
+      .site-nav a:hover {
+        color: var(--mint);
+      }
+
+      .site-nav a[aria-current="page"] {
+        color: var(--mint);
+      }
+
       footer {
         color: var(--muted);
         font-size: 0.9rem;
@@ -95,6 +116,11 @@
   </head>
   <body>
     <main>
+      <nav class="site-nav" aria-label="Site">
+        <a href="./display.html">Display on iPad</a>
+        <a href="./index.html" aria-current="page">Privacy</a>
+      </nav>
+
       <p class="brand">RALLY</p>
       <h1>Privacy Policy</h1>
       <p class="updated">Last updated: October 20, 2026</p>
@@ -160,7 +186,11 @@
       </p>
 
       <hr />
-      <footer>Rally for Apple Watch · It Was Matt Gregg</footer>
+      <footer>
+        Rally for Apple Watch ·
+        <a href="./display.html">Display on iPad</a>
+        · It Was Matt Gregg
+      </footer>
     </main>
   </body>
 </html>
