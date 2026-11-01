@@ -1,13 +1,27 @@
 import SwiftUI
 
 /// Display-only two-score board (phone host chrome or iPad fullscreen).
+/// Numbers dominate the viewport; size scales aggressively in landscape when chrome is tucked away.
 struct DisplayScoreboardView: View {
     let state: GameState
-    var compactChrome = false
+    var theme: CompanionNumberTheme = .mintEmber
+    /// Extra bottom reserve when the session drawer is expanded (points).
+    var bottomChromeInset: CGFloat = 0
+    var compactLabels = false
 
     var body: some View {
         GeometryReader { geo in
-            let scoreSize = min(geo.size.width * 0.28, geo.size.height * 0.42)
+            let landscape = geo.size.width > geo.size.height
+            let labelBand: CGFloat = compactLabels || landscape ? 22 : 36
+            let usableHeight = max(geo.size.height - bottomChromeInset - labelBand - 8, 48)
+            let halfWidth = max(geo.size.width * 0.5 - 12, 40)
+            let maxDigits = max(digitCount(state.sideA.score), digitCount(state.sideB.score), 1)
+            // Fill height in landscape; still clamp to half-width so long scores don't collide.
+            let heightFactor: CGFloat = landscape ? 0.96 : 0.78
+            let byHeight = usableHeight * heightFactor
+            let byWidth = halfWidth / CGFloat(maxDigits) * 1.35
+            let scoreSize = min(byHeight, byWidth)
+
             ZStack {
                 fieldBackground
 
@@ -15,24 +29,32 @@ struct DisplayScoreboardView: View {
                     sideColumn(
                         label: state.sideA.label,
                         score: state.sideA.score,
-                        accent: ScoreTheme.home,
-                        glow: ScoreTheme.homeGlow,
-                        scoreSize: scoreSize
+                        accent: theme.home,
+                        glow: theme.homeGlow,
+                        scoreSize: scoreSize,
+                        landscape: landscape
                     )
                     Rectangle()
                         .fill(ScoreTheme.hairline)
                         .frame(width: 1)
-                        .padding(.vertical, compactChrome ? 24 : 48)
+                        .padding(.vertical, landscape ? 12 : 28)
+                        .padding(.bottom, bottomChromeInset * 0.15)
                     sideColumn(
                         label: state.sideB.label,
                         score: state.sideB.score,
-                        accent: ScoreTheme.away,
-                        glow: ScoreTheme.awayGlow,
-                        scoreSize: scoreSize
+                        accent: theme.away,
+                        glow: theme.awayGlow,
+                        scoreSize: scoreSize,
+                        landscape: landscape
                     )
                 }
+                .padding(.bottom, bottomChromeInset)
             }
         }
+    }
+
+    private func digitCount(_ score: Int) -> Int {
+        String(max(score, 0)).count
     }
 
     private func sideColumn(
@@ -40,20 +62,27 @@ struct DisplayScoreboardView: View {
         score: Int,
         accent: Color,
         glow: Color,
-        scoreSize: CGFloat
+        scoreSize: CGFloat,
+        landscape: Bool
     ) -> some View {
-        VStack(spacing: compactChrome ? 8 : 16) {
+        VStack(spacing: landscape || compactLabels ? 4 : 12) {
             Text(label.uppercased())
-                .font(.system(compactChrome ? .caption : .title3, design: .rounded).weight(.bold))
-                .tracking(2)
+                .font(.system(landscape || compactLabels ? .caption2 : .title3, design: .rounded).weight(.bold))
+                .tracking(landscape ? 1.5 : 2)
                 .foregroundStyle(ScoreTheme.inkMuted)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
             Text("\(score)")
                 .font(.scoreHero(size: scoreSize))
                 .foregroundStyle(accent)
+                .minimumScaleFactor(0.35)
+                .lineLimit(1)
                 .contentTransition(.numericText())
-                .shadow(color: glow, radius: 18)
+                .shadow(color: glow, radius: landscape ? 22 : 18)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 4)
     }
 
     private var fieldBackground: some View {
@@ -65,13 +94,13 @@ struct DisplayScoreboardView: View {
             )
             HStack(spacing: 0) {
                 RadialGradient(
-                    colors: [ScoreTheme.homeGlow, .clear],
+                    colors: [theme.homeGlow, .clear],
                     center: .center,
                     startRadius: 20,
                     endRadius: 220
                 )
                 RadialGradient(
-                    colors: [ScoreTheme.awayGlow, .clear],
+                    colors: [theme.awayGlow, .clear],
                     center: .center,
                     startRadius: 20,
                     endRadius: 220

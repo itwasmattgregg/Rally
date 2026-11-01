@@ -3,6 +3,7 @@ import SwiftUI
 /// Single iOS/iPadOS app: phone hosts/relays; iPad (default) joins as display.
 struct CompanionRootView: View {
     @Environment(PhoneSessionAuthority.self) private var authority
+    @Environment(CompanionDisplayPreferences.self) private var displayPrefs
     @State private var mode: Mode
 
     enum Mode: String, CaseIterable, Identifiable {
@@ -23,25 +24,15 @@ struct CompanionRootView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            Group {
-                switch mode {
-                case .host:
-                    HostScoreboardView()
-                case .join:
-                    JoinScoreboardView()
-                }
+        Group {
+            switch mode {
+            case .host:
+                HostScoreboardView(mode: $mode)
+            case .join:
+                JoinScoreboardView(mode: $mode)
             }
-
-            Picker("Mode", selection: $mode) {
-                ForEach(Mode.allCases) { item in
-                    Text(item.title).tag(item)
-                }
-            }
-            .pickerStyle(.segmented)
-            .frame(maxWidth: 180)
-            .padding(16)
         }
         .preferredColorScheme(.dark)
+        .statusBarHidden(!displayPrefs.chromeExpanded)
     }
 }

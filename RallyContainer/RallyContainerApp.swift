@@ -5,6 +5,7 @@ struct RallyContainerApp: App {
     @State private var authority = PhoneSessionAuthority()
     @State private var advertiser = BoardAdvertiser()
     @State private var browser = BoardBrowser()
+    @State private var displayPrefs = CompanionDisplayPreferences()
     @State private var watchRelay: PhoneWatchRelay?
 
     var body: some Scene {
@@ -13,6 +14,7 @@ struct RallyContainerApp: App {
                 .environment(authority)
                 .environment(advertiser)
                 .environment(browser)
+                .environment(displayPrefs)
                 .task {
                     if watchRelay == nil {
                         let relay = PhoneWatchRelay(authority: authority)
