@@ -3,22 +3,77 @@ import SwiftUI
 /// iPad (or phone) spectator: enter/browse code, fullscreen scores, reconnect banner.
 struct JoinScoreboardView: View {
     @Environment(BoardBrowser.self) private var browser
+    @Environment(CompanionDisplayPreferences.self) private var displayPrefs
+    @Binding var mode: CompanionRootView.Mode
     @State private var code = ""
     @FocusState private var codeFocused: Bool
 
     var body: some View {
         ZStack(alignment: .top) {
             if let state = browser.state, browser.isConnected || browser.isReconnecting {
-                DisplayScoreboardView(state: state)
-                if browser.isReconnecting {
-                    reconnectBanner
-                }
+                connectedBoard(state: state)
             } else {
                 joinChrome
             }
         }
         .onAppear {
             browser.startBrowsing()
+        }
+    }
+
+    private func connectedBoard(state: GameState) -> some View {
+        GeometryReader { geo in
+            let landscape = geo.size.width > geo.size.height
+            let expandedInset: CGFloat = landscape ? 150 : 188
+            let collapsedInset: CGFloat = 56
+
+            ZStack(alignment: .bottom) {
+                DisplayScoreboardView(
+                    state: state,
+                    theme: displayPrefs.numberTheme,
+                    bottomChromeInset: displayPrefs.chromeExpanded ? expandedInset : collapsedInset,
+                    compactLabels: true
+                )
+
+                if browser.isReconnecting {
+                    VStack {
+                        reconnectBanner
+                        Spacer()
+                    }
+                }
+
+                SessionChromeDrawer(isExpanded: Binding(
+                    get: { displayPrefs.chromeExpanded },
+                    set: { displayPrefs.chromeExpanded = $0 }
+                )) {
+                    joinSessionChrome
+                }
+            }
+        }
+    }
+
+    private var joinSessionChrome: some View {
+        VStack(spacing: 14) {
+            Picker("Mode", selection: $mode) {
+                ForEach(CompanionRootView.Mode.allCases) { item in
+                    Text(item.title).tag(item)
+                }
+            }
+            .pickerStyle(.segmented)
+            .frame(maxWidth: 220)
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text(browser.statusMessage)
+                .font(.system(.footnote, design: .rounded).weight(.semibold))
+                .foregroundStyle(ScoreTheme.inkMuted)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            NumberThemePicker(
+                theme: Binding(
+                    get: { displayPrefs.numberTheme },
+                    set: { displayPrefs.numberTheme = $0 }
+                )
+            )
         }
     }
 
@@ -44,6 +99,14 @@ struct JoinScoreboardView: View {
             .ignoresSafeArea()
 
             VStack(spacing: 24) {
+                Picker("Mode", selection: $mode) {
+                    ForEach(CompanionRootView.Mode.allCases) { item in
+                        Text(item.title).tag(item)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(maxWidth: 220)
+
                 Text("Rally")
                     .font(.system(size: 44, weight: .heavy, design: .rounded))
                     .foregroundStyle(ScoreTheme.home)

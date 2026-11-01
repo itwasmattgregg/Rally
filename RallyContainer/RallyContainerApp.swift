@@ -7,6 +7,7 @@ struct RallyContainerApp: App {
     @State private var authority = PhoneSessionAuthority()
     @State private var advertiser = BoardAdvertiser()
     @State private var browser = BoardBrowser()
+    @State private var displayPrefs = CompanionDisplayPreferences()
     @State private var watchRelay: PhoneWatchRelay?
     @State private var backgroundHost = CourtBackgroundHost()
     @State private var mode: CompanionRootView.Mode = {
@@ -19,6 +20,7 @@ struct RallyContainerApp: App {
                 .environment(authority)
                 .environment(advertiser)
                 .environment(browser)
+                .environment(displayPrefs)
                 .task { configureRelay() }
                 .onChange(of: mode) { _, newMode in
                     applyMode(newMode)
