@@ -21,6 +21,20 @@
                ReferencedContainer = "container:Rally.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8E6E8B8D3078813200562200"
+               BuildableName = "Rally Watch App.app"
+               BlueprintName = "Rally Watch App"
+               ReferencedContainer = "container:Rally.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction

@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Night-court palette: charcoal field, mint home, ember away.
-/// Tuned for OLED watch faces and iPhone dark mode — never purple, never cream.
+/// Tuned for OLED watch faces and phone/iPad dark displays — never purple, never cream.
 enum ScoreTheme {
     static let fieldTop = Color(red: 0.05, green: 0.07, blue: 0.09)
     static let fieldBottom = Color(red: 0.09, green: 0.11, blue: 0.13)

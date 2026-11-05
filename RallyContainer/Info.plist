@@ -20,17 +20,21 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>ITSWatchOnlyContainer</key>
-	<true/>
-	<key>LSApplicationLaunchProhibited</key>
-	<true/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_rallyboard._tcp</string>
+	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Rally shares the live scoreboard with nearby iPads over your local network — no internet required.</string>
 	<key>UIDeviceFamily</key>
 	<array>
 		<integer>1</integer>
 		<integer>2</integer>
 	</array>
+	<key>UILaunchScreen</key>
+	<dict/>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>

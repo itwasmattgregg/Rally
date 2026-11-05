@@ -24,7 +24,17 @@ struct ScoreboardView: View {
             VStack(spacing: 0) {
                 resetBar
 
-                if match.isRunning {
+                if board.phoneAppMissing {
+                    Text("Phone app not linked")
+                        .font(.system(.caption2, design: .rounded).weight(.semibold))
+                        .foregroundStyle(ScoreTheme.inkMuted)
+                        .padding(.bottom, 2)
+                } else if board.phoneOutOfRange {
+                    Text("Phone out of range")
+                        .font(.system(.caption2, design: .rounded).weight(.semibold))
+                        .foregroundStyle(ScoreTheme.away)
+                        .padding(.bottom, 2)
+                } else if match.isRunning {
                     Text(MatchSession.clockString(match.elapsed))
                         .font(.system(.caption2, design: .rounded).weight(.bold))
                         .foregroundStyle(isLuminanceReduced ? ScoreTheme.inkMuted : ScoreTheme.home)
@@ -106,6 +116,7 @@ struct ScoreboardView: View {
             }
             Button("Cancel", role: .cancel) {}
         }
+        .onAppear { board.refreshReachability() }
     }
 
     private func bumpActive() {
