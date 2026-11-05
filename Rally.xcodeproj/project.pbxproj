@@ -117,6 +117,11 @@
 			path = RallyContainer;
 			sourceTree = "<group>";
 		};
+		8E8A1001307F000100562200 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -151,6 +156,7 @@
 			children = (
 				8E7A000D307E000100562200 /* RallyContainer */,
 				8E6E8B923078813200562200 /* Rally Watch App */,
+				8E8A1001307F000100562200 /* Shared */,
 				8E6E8BB73078829000562200 /* Frameworks */,
 				8E6E8B893078813200562200 /* Products */,
 			);
@@ -194,6 +200,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				8E6E8B923078813200562200 /* Rally Watch App */,
+				8E8A1001307F000100562200 /* Shared */,
 			);
 			name = "Rally Watch App";
 			packageProductDependencies = (
@@ -229,6 +236,7 @@
 				8E7A0008307E000100562200 /* Frameworks */,
 				8E7A0009307E000100562200 /* Resources */,
 				8E7A0003307E000100562200 /* Embed Watch Content */,
+				8E8A2001307F100100562200 /* Fix Watch Simulator Embed */,
 			);
 			buildRules = (
 			);
@@ -237,6 +245,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				8E7A000D307E000100562200 /* RallyContainer */,
+				8E8A1001307F000100562200 /* Shared */,
 			);
 			name = Rally;
 			packageProductDependencies = (
@@ -311,6 +320,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		8E8A2001307F100100562200 /* Fix Watch Simulator Embed */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Scripts/fix-watch-sim-embed.sh",
+			);
+			name = "Fix Watch Simulator Embed";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "\"${SRCROOT}/Scripts/fix-watch-sim-embed.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8E6E8B8A3078813200562200 /* Sources */ = {
@@ -408,8 +440,8 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
-				SUPPORTS_MACCATALYST = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos watchsimulator watchos";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -467,8 +499,8 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
-				SUPPORTS_MACCATALYST = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos watchsimulator watchos";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -490,7 +522,8 @@
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Rally saves the volleyball workout and final score to Health.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKBackgroundModes = "workout-processing";
-				INFOPLIST_KEY_WKWatchOnly = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ItWasMattGregg.Rally;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -530,7 +563,8 @@
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Rally saves the volleyball workout and final score to Health.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKBackgroundModes = "workout-processing";
-				INFOPLIST_KEY_WKWatchOnly = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ItWasMattGregg.Rally;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -631,9 +665,13 @@
 		8E7A000A307E000100562200 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RallyContainer/RallyCompanion.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = A6GDPWEW4E;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = RallyContainer/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -661,9 +699,13 @@
 		8E7A000B307E000100562200 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RallyContainer/RallyCompanion.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = A6GDPWEW4E;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = RallyContainer/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;

@@ -1,54 +1,78 @@
 # Rally
 
-Watch-only scoreboard for two teams — big tap targets, mint vs ember, no iPhone app.
+Watch scorekeeper for two unbounded scores (mint / ember), with an optional offline iPhone/iPad companion for court displays.
 
-## What you get
+**Watch stays independent** — install and score with no iOS app. Install the iPhone/iPad companion too when you want linked court displays (phone hosts/relays; iPads join over local Bonjour).
 
-- **Tap a score** → +1 (primary action) with spring pulse + haptic
-- **Minus control** under each score → −1
-- **Reset** centered at the top (with confirmation)
-- **Pencil** → rename HOME / AWAY (short labels)
-- **Digital Crown** → +/− the last team you touched
-- **Always On Display** → dims glows / ink when luminance is reduced
-- **Complication / Smart Stack widget** → glance `12–9` without opening the app
+## Architecture (v1 multi-display)
 
-## Can it stay open during Apple Fitness?
+Watch → WatchConnectivity → iPhone (authority + Bonjour relay) → Network.framework → iPad display(s).
 
-**Not while Fitness owns the workout.** watchOS allows only one active `HKWorkoutSession`. If Workout / Fitness is tracking an activity, your app cannot also claim that session, and the system will keep bringing Fitness forward on wrist raise.
+- Phone/iPad UI is **display-only** (no scoring controls).
+- No internet / cloud on court.
+- Background on Watch via **HKWorkout** session.
+- Phone Host uses a short background task so score fan-out can continue briefly after the screen locks.
 
-| Approach | Keeps scoreboard frontmost? | Works *with* Fitness? | Notes |
-|---|---|---|---|
-| Normal app | Only while you’re in it | Yes (you leave Fitness to score) | Dock + complication make this fast |
-| `HKWorkoutSession` in *your* app | Yes, on wrist raise | **No** — conflicts with Fitness | Fine if *you* are the workout app |
-| `WKExtendedRuntimeSession` (self-care / mindfulness) | Frontmost for a limited time | Ends when user leaves your app | Wrong category for scoring; App Review risk |
-| Smart Stack / complication | Glanceable | **Yes** | Best coexistence path |
+## Court display setup (Bonjour)
 
-**Practical recommendation:** keep Rally in the **Dock**, add the **rectangular complication** or Smart Stack widget, and open it only when you need to bump a point.
+Bonjour is the local discovery layer — no accounts, no Wi‑Fi password sharing UI, no QR required (QR is optional). Phone **advertises** a board; iPad **browses** and joins by matching a 4-character code.
 
-## Open in Xcode (Mac required)
+### One-time device prep
 
-This environment can’t compile watchOS binaries. On a Mac:
+1. Install **Rally** on the phone and on each iPad (same build).
+2. Turn **Wi‑Fi** on for both devices (same network is ideal). Leave **Bluetooth** on — Apple uses it for peer-to-peer when Wi‑Fi alone is flaky.
+3. Open Rally once on each device and tap **Allow** when iOS asks for **Local Network** access.
+   - If you missed that prompt: Settings → Rally → Local Network → On.
 
-### Option A — New project, drop sources in (simplest)
+### On court (every match)
 
-1. Xcode → **File → New → Project → watchOS → App**
-2. Product Name: `Rally`
-3. Choose **Watch App** (no companion iOS app)
-4. Replace generated Swift with `WatchApp/*` + `Shared/*`
-5. Optional: **File → New → Target → Widget Extension** (watchOS), use `WidgetExtension/ScoreWidget.swift` + `Shared/ScoreDefaults.swift`
-6. If you added the widget: enable **App Groups** on Watch + Widget → `group.com.example.Rally` (update `ScoreDefaults.suiteName` to match). This stays on-watch only — it feeds the complication, not an iPhone.
-7. Run on a Watch simulator or device
+1. **Phone → Host** (default on iPhone). You should see a big 4-letter code (e.g. `K7MP`) and “Broadcasting”.
+2. **iPad → Join** (default on iPad). Type that same code and tap **Join**, or tap the matching row under **Nearby**.
+3. When status shows **Connected / Live**, scores from the Watch appear on the iPad.
+4. Score on the Watch as usual. Keep the Rally app open (or recently used) on the phone — it relays Watch → iPad. The phone may lock; leave Rally in Host mode so background hosting can keep the relay alive briefly.
 
-### Option B — XcodeGen
+### What the code is
+
+- Generated once on the phone and **persisted** (same code across launches until you rotate it in-app).
+- Published as Bonjour service name `Rally-XXXX` under type `_rallyboard._tcp`.
+- Nearby lists only boards whose name/TXT resolve to a real 4-letter code — prefer typing the phone’s on-screen code if Nearby looks stale.
+
+### Troubleshooting
+
+| Symptom | Fix |
+| --- | --- |
+| No Local Network prompt / empty Nearby | Settings → Rally → Local Network On; force-quit and reopen Rally on both devices |
+| Wrong code under Nearby | Ignore Nearby; type the code shown on the phone Host screen |
+| Join stuck on “Waiting…” | Confirm phone shows Host + Broadcasting; same Wi‑Fi/BT; Local Network allowed |
+| iPad connected, scores freeze after phone lock | Bring phone to foreground once, keep Rally Host open; Watch still scores alone |
+
+## Open in Xcode
 
 ```bash
-brew install xcodegen
-cd Rally
-xcodegen
 open Rally.xcodeproj
 ```
 
-Then set your Team / unique bundle IDs (and App Group if using the widget).
+### Run companion (iPhone / iPad)
+
+1. Scheme: **Rally**
+2. Destination: iPhone or iPad simulator/device
+3. Run — Host mode (default on phone) shows scores + session code/QR and advertises `_rallyboard._tcp`
+4. On iPad (or switch the segmented control to **Join**): enter the 4-character code or pick a nearby board
+
+### Run Watch scorekeeper
+
+1. Scheme: **Rally Watch App**
+2. Destination: Watch simulator/device
+3. +/- on the board; swipe up for workout start/stop (keeps scoring available in background)
+
+Simulator tip: run **Rally** and **Rally Watch App** as separate schemes. Watch is embedded into the iOS app on **device** archives (`iphoneos`); simulators use the Watch scheme directly so packaging stays independent. Bonjour discovery is unreliable between simulators — use two physical devices to validate Host/Join.
+
+### Optional XcodeGen
+
+```bash
+brew install xcodegen
+xcodegen   # regenerates from project.yml; checked-in .xcodeproj is source of truth day-to-day
+```
 
 ## Design notes
 
@@ -58,5 +82,5 @@ Then set your Team / unique bundle IDs (and App Group if using the widget).
 
 ## Requirements
 
-- Xcode 15+
-- watchOS 10+
+- Xcode 15+ (developed with Xcode 26)
+- watchOS 10+ / iOS 18+
