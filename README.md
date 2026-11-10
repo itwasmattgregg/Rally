@@ -60,3 +60,7 @@ Then set your Team / unique bundle IDs (and App Group if using the widget).
 
 - Xcode 15+
 - watchOS 10+
+
+## App Store subtitle (Guideline 5.2.5)
+
+Do **not** put `watchOS`, `WatchOS`, or other Apple product/OS names in the App Store **subtitle** or **keywords**. Subtitle lives in App Store Connect only (not in this repo). Prefer something like: `Two-score wrist scorekeeper`.
