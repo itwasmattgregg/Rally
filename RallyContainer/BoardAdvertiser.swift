@@ -30,16 +30,17 @@ final class BoardAdvertiser {
             )
 
             listener.stateUpdateHandler = { [weak self] state in
-                Task { @MainActor in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
                     switch state {
                     case .ready:
-                        self?.isAdvertising = true
-                        self?.lastError = nil
+                        self.isAdvertising = true
+                        self.lastError = nil
                     case .failed(let error):
-                        self?.isAdvertising = false
-                        self?.lastError = error.localizedDescription
+                        self.isAdvertising = false
+                        self.lastError = error.localizedDescription
                     case .cancelled:
-                        self?.isAdvertising = false
+                        self.isAdvertising = false
                     default:
                         break
                     }
@@ -47,7 +48,7 @@ final class BoardAdvertiser {
             }
 
             listener.newConnectionHandler = { [weak self] connection in
-                Task { @MainActor in
+                Task { @MainActor [weak self] in
                     self?.accept(connection)
                 }
             }
@@ -96,15 +97,16 @@ final class BoardAdvertiser {
         authority?.noteDisplayCount(peerCount)
 
         peer.onClosed = { [weak self] in
-            Task { @MainActor in
-                self?.connections.removeValue(forKey: id)
-                self?.peerCount = self?.connections.count ?? 0
-                self?.authority?.noteDisplayCount(self?.peerCount ?? 0)
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                self.connections.removeValue(forKey: id)
+                self.peerCount = self.connections.count
+                self.authority?.noteDisplayCount(self.peerCount)
             }
         }
 
         peer.onFrames = { [weak self] frames in
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
                 self?.handleIncoming(frames, from: peer)
             }
         }
@@ -200,7 +202,7 @@ final class PeerConnection {
 
     func start() {
         connection.stateUpdateHandler = { [weak self] state in
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
                 switch state {
                 case .failed, .cancelled:
                     self?.onClosed?()
@@ -223,7 +225,7 @@ final class PeerConnection {
 
     private func receive() {
         connection.receive(minimumIncompleteLength: 1, maximumLength: 64 * 1024) { [weak self] content, _, isComplete, error in
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
                 guard let self else { return }
                 if let content {
                     self.buffer.append(content)

@@ -15,7 +15,9 @@ final class CourtBackgroundHost {
             task = .invalid
         }
         task = UIApplication.shared.beginBackgroundTask(withName: reason) { [weak self] in
-            self?.end()
+            Task { @MainActor [weak self] in
+                self?.end()
+            }
         }
     }
 

@@ -38,15 +38,16 @@ final class BoardBrowser {
         let browser = NWBrowser(for: descriptor, using: parameters)
 
         browser.stateUpdateHandler = { [weak self] browseState in
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
                 switch browseState {
                 case .ready:
-                    self?.isBrowsing = true
-                    self?.lastError = nil
-                    self?.statusMessage = "Looking for boards…"
+                    self.isBrowsing = true
+                    self.lastError = nil
+                    self.statusMessage = "Looking for boards…"
                 case .failed(let error):
-                    self?.isBrowsing = false
-                    self?.lastError = error.localizedDescription
+                    self.isBrowsing = false
+                    self.lastError = error.localizedDescription
                 default:
                     break
                 }
@@ -54,7 +55,7 @@ final class BoardBrowser {
         }
 
         browser.browseResultsChangedHandler = { [weak self] results, _ in
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
                 self?.ingest(results)
             }
         }
@@ -147,7 +148,7 @@ final class BoardBrowser {
         self.connection = connection
 
         connection.stateUpdateHandler = { [weak self] state in
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
                 self?.handleConnectionState(state, board: board)
             }
         }
@@ -189,7 +190,7 @@ final class BoardBrowser {
     private func startHeartbeat() {
         heartbeat?.invalidate()
         heartbeat = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
                 self?.sendHeartbeat()
             }
         }
@@ -223,7 +224,7 @@ final class BoardBrowser {
 
     private func receive() {
         connection?.receive(minimumIncompleteLength: 1, maximumLength: 64 * 1024) { [weak self] content, _, isComplete, error in
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
                 guard let self else { return }
                 if let content {
                     self.buffer.append(content)

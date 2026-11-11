@@ -56,12 +56,15 @@ final class WatchConnectivityBridge: NSObject {
 
             if session.isReachable {
                 session.sendMessage(payload, replyHandler: { [weak self] reply in
-                    Task { @MainActor in
-                        self?.handleAck(reply)
+                    let eventId = reply[RallyWC.ackEventIdKey] as? String
+                    let revision = reply[RallyWC.revisionKey] as? UInt64 ?? 0
+                    Task { @MainActor [weak self] in
+                        self?.handleAck(eventId: eventId, revision: revision)
                     }
                 }, errorHandler: { [weak self] error in
-                    Task { @MainActor in
-                        self?.lastError = error.localizedDescription
+                    let message = error.localizedDescription
+                    Task { @MainActor [weak self] in
+                        self?.lastError = message
                         self?.queueEvent(data)
                     }
                 })
@@ -112,10 +115,9 @@ final class WatchConnectivityBridge: NSObject {
         }
     }
 
-    private func handleAck(_ reply: [String: Any]) {
+    private func handleAck(eventId: String?, revision: UInt64) {
         // Intentionally ignore any `state` / snapshot keys — one-way scoring.
-        if let eventId = reply[RallyWC.ackEventIdKey] as? String {
-            let revision = reply[RallyWC.revisionKey] as? UInt64 ?? 0
+        if let eventId {
             onAck?(eventId, revision)
         }
         refreshCompanionState()
@@ -128,10 +130,11 @@ extension WatchConnectivityBridge: WCSessionDelegate {
         activationDidCompleteWith activationState: WCSessionActivationState,
         error: Error?
     ) {
+        let message = error?.localizedDescription
         Task { @MainActor in
             self.refreshCompanionState()
-            if let error {
-                self.lastError = error.localizedDescription
+            if let message {
+                self.lastError = message
             }
         }
     }

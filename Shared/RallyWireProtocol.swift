@@ -92,7 +92,8 @@ extension JSONDecoder {
 }
 
 /// WatchConnectivity dictionary keys (small payloads).
-enum RallyWC {
+/// Nonisolated so WCSessionDelegate hops can read keys off the main actor.
+nonisolated enum RallyWC {
     static let kindKey = "kind"
     static let eventKey = "event"
     static let stateKey = "state"

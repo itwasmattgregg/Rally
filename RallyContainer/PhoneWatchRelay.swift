@@ -1,6 +1,24 @@
 import Foundation
 import WatchConnectivity
 
+/// Sendable slice of a WCSession dictionary for hopping onto the main actor.
+nonisolated private struct IncomingWCPayload: Sendable {
+    var kind: String?
+    var eventData: Data?
+    var stateData: Data?
+
+    init(from message: [String: Any]) {
+        kind = message[RallyWC.kindKey] as? String
+        eventData = message[RallyWC.eventKey] as? Data
+        stateData = message[RallyWC.stateKey] as? Data
+    }
+}
+
+/// WCSession reply handlers are not Sendable; box for the MainActor hop only.
+nonisolated private struct WCReplyHandler: @unchecked Sendable {
+    let call: ([String: Any]) -> Void
+}
+
 /// Applies Watch → phone events for display / Bonjour fan-out.
 /// Never pushes GameState back to the Watch (scoring is one-way).
 @MainActor
@@ -22,16 +40,14 @@ final class PhoneWatchRelay: NSObject {
         session.activate()
     }
 
-    private func handle(_ message: [String: Any], replyHandler: (([String: Any]) -> Void)?) {
-        let kind = message[RallyWC.kindKey] as? String
-
+    private func handle(_ payload: IncomingWCPayload, reply: WCReplyHandler?) {
         // Events are the scoring path.
-        if let data = message[RallyWC.eventKey] as? Data,
+        if let data = payload.eventData,
            let event = try? JSONDecoder.rally.decode(ScoreEvent.self, from: data) {
             let state = authority.apply(event)
             onStateChanged?(state)
             // Ack only — do not include GameState or the Watch will fight itself.
-            replyHandler?([
+            reply?.call([
                 RallyWC.kindKey: RallyWC.kindAck,
                 RallyWC.ackEventIdKey: event.eventId,
                 RallyWC.revisionKey: state.revision
@@ -40,16 +56,25 @@ final class PhoneWatchRelay: NSObject {
         }
 
         // Optional one-way mirror (e.g. reset) for displays when no event was sent.
-        if kind == RallyWC.kindSnapshot || message[RallyWC.stateKey] != nil,
-           let data = message[RallyWC.stateKey] as? Data,
+        if payload.kind == RallyWC.kindSnapshot || payload.stateData != nil,
+           let data = payload.stateData,
            let state = try? JSONDecoder.rally.decode(GameState.self, from: data) {
             authority.adoptSnapshot(state)
             onStateChanged?(authority.state)
-            replyHandler?([RallyWC.kindKey: RallyWC.kindAck])
+            reply?.call([RallyWC.kindKey: RallyWC.kindAck])
             return
         }
 
-        replyHandler?([:])
+        reply?.call([:])
+    }
+
+    private func noteDefaultSession() {
+        guard WCSession.isSupported() else { return }
+        let session = WCSession.default
+        authority.noteWatchLink(
+            watchAppInstalled: session.isWatchAppInstalled,
+            reachable: session.isReachable
+        )
     }
 }
 
@@ -60,7 +85,7 @@ extension PhoneWatchRelay: WCSessionDelegate {
         error: Error?
     ) {
         Task { @MainActor in
-            self.noteSession(session)
+            self.noteDefaultSession()
         }
     }
 
@@ -71,27 +96,20 @@ extension PhoneWatchRelay: WCSessionDelegate {
 
     nonisolated func sessionReachabilityDidChange(_ session: WCSession) {
         Task { @MainActor in
-            self.noteSession(session)
+            self.noteDefaultSession()
         }
     }
 
     nonisolated func sessionWatchStateDidChange(_ session: WCSession) {
         Task { @MainActor in
-            self.noteSession(session)
+            self.noteDefaultSession()
         }
     }
 
-    @MainActor
-    private func noteSession(_ session: WCSession) {
-        authority.noteWatchLink(
-            watchAppInstalled: session.isWatchAppInstalled,
-            reachable: session.isReachable
-        )
-    }
-
     nonisolated func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
+        let payload = IncomingWCPayload(from: message)
         Task { @MainActor in
-            self.handle(message, replyHandler: nil)
+            self.handle(payload, reply: nil)
         }
     }
 
@@ -100,14 +118,17 @@ extension PhoneWatchRelay: WCSessionDelegate {
         didReceiveMessage message: [String: Any],
         replyHandler: @escaping ([String: Any]) -> Void
     ) {
+        let payload = IncomingWCPayload(from: message)
+        let reply = WCReplyHandler(call: replyHandler)
         Task { @MainActor in
-            self.handle(message, replyHandler: replyHandler)
+            self.handle(payload, reply: reply)
         }
     }
 
     nonisolated func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
+        let payload = IncomingWCPayload(from: applicationContext)
         Task { @MainActor in
-            self.handle(applicationContext, replyHandler: nil)
+            self.handle(payload, reply: nil)
         }
     }
 
@@ -115,8 +136,9 @@ extension PhoneWatchRelay: WCSessionDelegate {
         _ session: WCSession,
         didReceiveUserInfo userInfo: [String: Any] = [:]
     ) {
+        let payload = IncomingWCPayload(from: userInfo)
         Task { @MainActor in
-            self.handle(userInfo, replyHandler: nil)
+            self.handle(payload, reply: nil)
         }
     }
 }
