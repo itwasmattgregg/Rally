@@ -1,37 +1,26 @@
 import SwiftUI
 
 /// Bottom drawer for companion session chrome (QR/code/status/themes).
-/// Collapsed to a thin handle so scores are not covered.
+/// Collapsed to a system-style grabber so scores stay as large as possible.
 struct SessionChromeDrawer<Content: View>: View {
     @Binding var isExpanded: Bool
     @ViewBuilder var content: () -> Content
 
+    private let spring = Animation.spring(response: 0.38, dampingFraction: 0.86)
+    private let dragThreshold: CGFloat = 36
+
     var body: some View {
         VStack(spacing: 0) {
-            Button {
-                withAnimation(.spring(response: 0.38, dampingFraction: 0.86)) {
-                    isExpanded.toggle()
+            grabber
+                .gesture(handleGesture)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Session chrome")
+                .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
+                .accessibilityHint(isExpanded ? "Collapses session details" : "Expands session details")
+                .accessibilityAddTraits(.isButton)
+                .accessibilityAction {
+                    setExpanded(!isExpanded)
                 }
-            } label: {
-                VStack(spacing: 6) {
-                    Capsule()
-                        .fill(ScoreTheme.ink.opacity(0.35))
-                        .frame(width: 36, height: 5)
-                    HStack(spacing: 6) {
-                        Image(systemName: isExpanded ? "chevron.down" : "chevron.up")
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
-                        Text(isExpanded ? "Hide session" : "Session")
-                            .font(.system(.caption2, design: .rounded).weight(.bold))
-                    }
-                    .foregroundStyle(ScoreTheme.inkMuted)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top, 10)
-                .padding(.bottom, isExpanded ? 8 : 14)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(isExpanded ? "Hide session chrome" : "Show session chrome")
 
             if isExpanded {
                 content()
@@ -61,6 +50,46 @@ struct SessionChromeDrawer<Content: View>: View {
             }
             .ignoresSafeArea(edges: .bottom)
         )
+    }
+
+    /// Subtle capsule grabber — tap or drag like a system sheet handle.
+    private var grabber: some View {
+        Capsule()
+            .fill(ScoreTheme.ink.opacity(0.35))
+            .frame(width: 36, height: 5)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 10)
+            .padding(.bottom, isExpanded ? 10 : 14)
+            .contentShape(Rectangle())
+    }
+
+    private var handleGesture: some Gesture {
+        DragGesture(minimumDistance: 0, coordinateSpace: .local)
+            .onEnded { value in
+                let dy = value.translation.height
+                let predicted = value.predictedEndTranslation.height
+
+                // Short travel → one-tap toggle (sheet-handle feel).
+                if hypot(value.translation.width, dy) < 10 {
+                    setExpanded(!isExpanded)
+                    return
+                }
+
+                if isExpanded {
+                    if predicted > dragThreshold || dy > dragThreshold {
+                        setExpanded(false)
+                    }
+                } else if predicted < -dragThreshold || dy < -dragThreshold {
+                    setExpanded(true)
+                }
+            }
+    }
+
+    private func setExpanded(_ expanded: Bool) {
+        guard expanded != isExpanded else { return }
+        withAnimation(spring) {
+            isExpanded = expanded
+        }
     }
 }
 

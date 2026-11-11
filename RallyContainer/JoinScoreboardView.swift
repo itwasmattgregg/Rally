@@ -25,7 +25,7 @@ struct JoinScoreboardView: View {
         GeometryReader { geo in
             let landscape = geo.size.width > geo.size.height
             let expandedInset: CGFloat = landscape ? 150 : 188
-            let collapsedInset: CGFloat = 56
+            let collapsedInset: CGFloat = 44
 
             ZStack(alignment: .bottom) {
                 DisplayScoreboardView(

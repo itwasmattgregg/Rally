@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// iPhone display-only host: live scores + hideable QR/session chrome + Bonjour advertise.
+/// iPhone display-only host: live scores + grabber drawer for QR/session chrome + Bonjour advertise.
 struct HostScoreboardView: View {
     @Environment(PhoneSessionAuthority.self) private var authority
     @Environment(BoardAdvertiser.self) private var advertiser
@@ -12,7 +12,7 @@ struct HostScoreboardView: View {
             let landscape = geo.size.width > geo.size.height
             // Reserve space under the board so QR/session chrome never covers numerals.
             let expandedInset: CGFloat = landscape ? 200 : 248
-            let collapsedInset: CGFloat = 56
+            let collapsedInset: CGFloat = 44
 
             ZStack(alignment: .bottom) {
                 DisplayScoreboardView(
