@@ -77,7 +77,7 @@ xcodegen   # regenerates from project.yml; checked-in .xcodeproj is source of tr
 ## Design notes
 
 - Field: deep charcoal gradient; Watch keeps soft side washes, phone/iPad scores are flat (no numeral glow) for court readability
-- Type: selectable score fonts (Rounded default, Standard, Serif, Mono) + shared color themes; Watch Options also toggles Digital Crown scoring (off by default)
+- Type: selectable score fonts (Rounded default, Standard, Serif, Mono, Segmented digital) + shared color themes; Watch Options also toggles Digital Crown scoring (off by default)
 - Motion: score spring on +1, numeric content transitions, optional crown haptics
 
 ## Requirements

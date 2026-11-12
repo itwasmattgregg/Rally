@@ -160,24 +160,34 @@ struct NumberFontPicker: View {
                         Button {
                             fontStyle = option
                         } label: {
-                            Text(option.title)
-                                .font(.system(.caption2, design: option.design).weight(.semibold))
-                                .foregroundStyle(ScoreTheme.ink)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 8)
-                                .background(
-                                    Capsule()
-                                        .fill(fontStyle == option ? ScoreTheme.resetFill : Color.clear)
-                                        .overlay(
-                                            Capsule()
-                                                .strokeBorder(
-                                                    fontStyle == option
-                                                        ? ScoreTheme.ink.opacity(0.35)
-                                                        : ScoreTheme.hairline,
-                                                    lineWidth: 1
-                                                )
-                                        )
-                                )
+                            HStack(spacing: 6) {
+                                if option.usesSegmentedDigits {
+                                    SegmentedScoreText(
+                                        value: 88,
+                                        digitHeight: 12,
+                                        color: ScoreTheme.ink,
+                                        ghostOpacity: 0.2
+                                    )
+                                }
+                                Text(option.title)
+                                    .font(.system(.caption2, design: option.design).weight(.semibold))
+                                    .foregroundStyle(ScoreTheme.ink)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(fontStyle == option ? ScoreTheme.resetFill : Color.clear)
+                                    .overlay(
+                                        Capsule()
+                                            .strokeBorder(
+                                                fontStyle == option
+                                                    ? ScoreTheme.ink.opacity(0.35)
+                                                    : ScoreTheme.hairline,
+                                                lineWidth: 1
+                                            )
+                                    )
+                            )
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(option.title)

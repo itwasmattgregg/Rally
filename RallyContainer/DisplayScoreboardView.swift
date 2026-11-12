@@ -21,7 +21,7 @@ struct DisplayScoreboardView: View {
             // Fill height in landscape; still clamp to half-width so long scores don't collide.
             let heightFactor: CGFloat = landscape ? 0.96 : 0.78
             let byHeight = usableHeight * heightFactor
-            let byWidth = halfWidth / CGFloat(maxDigits) * 1.35
+            let byWidth = halfWidth / (CGFloat(maxDigits) * fontStyle.digitAspect)
             let scoreSize = min(byHeight, byWidth)
 
             ZStack {
@@ -71,12 +71,7 @@ struct DisplayScoreboardView: View {
                 .foregroundStyle(ScoreTheme.inkMuted)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
-            Text("\(score)")
-                .font(.scoreHero(size: scoreSize, style: fontStyle))
-                .foregroundStyle(accent)
-                .minimumScaleFactor(0.35)
-                .lineLimit(1)
-                .contentTransition(.numericText())
+            ScoreHeroText(value: score, size: scoreSize, style: fontStyle, color: accent)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

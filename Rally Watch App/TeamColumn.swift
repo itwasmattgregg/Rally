@@ -31,13 +31,17 @@ struct TeamColumn: View {
                 }
 
             Button(action: bump) {
-                Text("\(score)")
-                    .font(.scoreHero(size: scoreFontSize, style: fontStyle))
-                    .foregroundStyle(reduced ? accent.opacity(0.55) : accent)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .contentTransition(.numericText(value: Double(score)))
-                    .scaleEffect(pulse ? 1.08 : 1.0)
-                    .shadow(color: reduced ? .clear : glow, radius: pulse ? 10 : 4)
+                ScoreHeroText(
+                    value: score,
+                    size: scoreFontSize,
+                    style: fontStyle,
+                    color: reduced ? accent.opacity(0.55) : accent,
+                    ghostOpacity: reduced ? 0.06 : 0.14
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentTransition(.numericText(value: Double(score)))
+                .scaleEffect(pulse ? 1.08 : 1.0)
+                .shadow(color: reduced || fontStyle.usesSegmentedDigits ? .clear : glow, radius: pulse ? 10 : 4)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("\(name) score \(score)")

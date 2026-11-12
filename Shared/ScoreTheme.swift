@@ -20,7 +20,7 @@ enum ScoreTheme {
 }
 
 extension Font {
-    /// Big score numerals; design comes from the shared font preference.
+    /// Big score numerals for system-font styles. Prefer `ScoreHeroText` so Segmented works.
     static func scoreHero(size: CGFloat, style: ScoreNumberFont = .rounded) -> Font {
         .system(size: size, weight: .heavy, design: style.design)
     }

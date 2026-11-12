@@ -55,6 +55,14 @@ struct WatchOptionsView: View {
                             prefs.numberFont = option
                         } label: {
                             HStack {
+                                if option.usesSegmentedDigits {
+                                    SegmentedScoreText(
+                                        value: 88,
+                                        digitHeight: 16,
+                                        color: ScoreTheme.ink,
+                                        ghostOpacity: 0.2
+                                    )
+                                }
                                 Text(option.title)
                                     .font(.system(.body, design: option.design).weight(.semibold))
                                     .foregroundStyle(ScoreTheme.ink)

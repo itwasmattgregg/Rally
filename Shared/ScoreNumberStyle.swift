@@ -63,6 +63,8 @@ enum ScoreNumberFont: String, CaseIterable, Identifiable, Codable, Sendable {
     case standard
     case serif
     case mono
+    /// Drawn seven-segment digits (digital clock / scoreboard).
+    case segmented
 
     var id: String { rawValue }
 
@@ -72,15 +74,25 @@ enum ScoreNumberFont: String, CaseIterable, Identifiable, Codable, Sendable {
         case .standard: "Standard"
         case .serif: "Serif"
         case .mono: "Mono"
+        case .segmented: "Segmented"
         }
     }
 
+    /// True when scores should use drawn seven-segment digits instead of a system font.
+    var usesSegmentedDigits: Bool { self == .segmented }
+
+    /// Aspect width÷height per digit — used to size scores without clipping.
+    var digitAspect: CGFloat {
+        usesSegmentedDigits ? 0.58 : 0.74
+    }
+
+    /// System font design for non-segmented styles; segmented falls back to mono in text previews.
     var design: Font.Design {
         switch self {
         case .rounded: .rounded
         case .standard: .default
         case .serif: .serif
-        case .mono: .monospaced
+        case .mono, .segmented: .monospaced
         }
     }
 }
