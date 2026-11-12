@@ -95,7 +95,7 @@ struct SessionChromeDrawer<Content: View>: View {
 
 /// Compact theme chooser for the session drawer.
 struct NumberThemePicker: View {
-    @Binding var theme: CompanionNumberTheme
+    @Binding var theme: ScoreNumberTheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -105,7 +105,7 @@ struct NumberThemePicker: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ForEach(CompanionNumberTheme.allCases) { option in
+                    ForEach(ScoreNumberTheme.allCases) { option in
                         Button {
                             theme = option
                         } label: {
@@ -137,6 +137,51 @@ struct NumberThemePicker: View {
                         .buttonStyle(.plain)
                         .accessibilityLabel(option.title)
                         .accessibilityAddTraits(theme == option ? .isSelected : [])
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Compact font chooser for the session drawer (alongside color themes).
+struct NumberFontPicker: View {
+    @Binding var fontStyle: ScoreNumberFont
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Number font")
+                .font(.system(.caption2, design: .rounded).weight(.bold))
+                .foregroundStyle(ScoreTheme.inkMuted)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(ScoreNumberFont.allCases) { option in
+                        Button {
+                            fontStyle = option
+                        } label: {
+                            Text(option.title)
+                                .font(.system(.caption2, design: option.design).weight(.semibold))
+                                .foregroundStyle(ScoreTheme.ink)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .background(
+                                    Capsule()
+                                        .fill(fontStyle == option ? ScoreTheme.resetFill : Color.clear)
+                                        .overlay(
+                                            Capsule()
+                                                .strokeBorder(
+                                                    fontStyle == option
+                                                        ? ScoreTheme.ink.opacity(0.35)
+                                                        : ScoreTheme.hairline,
+                                                    lineWidth: 1
+                                                )
+                                        )
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(option.title)
+                        .accessibilityAddTraits(fontStyle == option ? .isSelected : [])
                     }
                 }
             }

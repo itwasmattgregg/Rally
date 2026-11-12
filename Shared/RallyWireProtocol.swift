@@ -97,6 +97,7 @@ nonisolated enum RallyWC {
     static let kindKey = "kind"
     static let eventKey = "event"
     static let stateKey = "state"
+    static let prefsKey = "prefs"
     static let ackEventIdKey = "ackEventId"
     static let revisionKey = "revision"
     static let phoneReachableKey = "phoneReachable"
@@ -105,4 +106,6 @@ nonisolated enum RallyWC {
     static let kindAck = "scoreAck"
     static let kindSnapshot = "snapshot"
     static let kindRequestSync = "requestSync"
+    /// One-way Watch → phone display theme/font. Phone never echoes prefs back.
+    static let kindDisplayPrefs = "displayPrefs"
 }

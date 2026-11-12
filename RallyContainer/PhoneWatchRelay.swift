@@ -6,11 +6,13 @@ nonisolated private struct IncomingWCPayload: Sendable {
     var kind: String?
     var eventData: Data?
     var stateData: Data?
+    var prefsData: Data?
 
     init(from message: [String: Any]) {
         kind = message[RallyWC.kindKey] as? String
         eventData = message[RallyWC.eventKey] as? Data
         stateData = message[RallyWC.stateKey] as? Data
+        prefsData = message[RallyWC.prefsKey] as? Data
     }
 }
 
@@ -20,12 +22,14 @@ nonisolated private struct WCReplyHandler: @unchecked Sendable {
 }
 
 /// Applies Watch → phone events for display / Bonjour fan-out.
-/// Never pushes GameState back to the Watch (scoring is one-way).
+/// Never pushes GameState or display prefs back to the Watch (one-way).
 @MainActor
 @Observable
 final class PhoneWatchRelay: NSObject {
     private let authority: PhoneSessionAuthority
     var onStateChanged: ((GameState) -> Void)?
+    /// Theme/font from Watch. Phone applies locally and must not echo back.
+    var onDisplayPrefs: ((ScoreDisplayPrefsSnapshot) -> Void)?
 
     init(authority: PhoneSessionAuthority) {
         self.authority = authority
@@ -61,6 +65,15 @@ final class PhoneWatchRelay: NSObject {
            let state = try? JSONDecoder.rally.decode(GameState.self, from: data) {
             authority.adoptSnapshot(state)
             onStateChanged?(authority.state)
+            reply?.call([RallyWC.kindKey: RallyWC.kindAck])
+            return
+        }
+
+        // Shared theme/font from Watch — apply on phone only; never send prefs to Watch.
+        if payload.kind == RallyWC.kindDisplayPrefs || payload.prefsData != nil,
+           let data = payload.prefsData,
+           let prefs = try? JSONDecoder.rally.decode(ScoreDisplayPrefsSnapshot.self, from: data) {
+            onDisplayPrefs?(prefs)
             reply?.call([RallyWC.kindKey: RallyWC.kindAck])
             return
         }

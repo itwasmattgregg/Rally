@@ -2,9 +2,11 @@ import SwiftUI
 
 /// Display-only two-score board (phone host chrome or iPad fullscreen).
 /// Numbers dominate the viewport; size scales aggressively in landscape when chrome is tucked away.
+/// No glow/shadow on numerals — high-contrast ink on charcoal for court readability.
 struct DisplayScoreboardView: View {
     let state: GameState
-    var theme: CompanionNumberTheme = .mintEmber
+    var theme: ScoreNumberTheme = .mintEmber
+    var fontStyle: ScoreNumberFont = .rounded
     /// Extra bottom reserve when the session drawer is expanded (points).
     var bottomChromeInset: CGFloat = 0
     var compactLabels = false
@@ -30,7 +32,6 @@ struct DisplayScoreboardView: View {
                         label: state.sideA.label,
                         score: state.sideA.score,
                         accent: theme.home,
-                        glow: theme.homeGlow,
                         scoreSize: scoreSize,
                         landscape: landscape
                     )
@@ -43,7 +44,6 @@ struct DisplayScoreboardView: View {
                         label: state.sideB.label,
                         score: state.sideB.score,
                         accent: theme.away,
-                        glow: theme.awayGlow,
                         scoreSize: scoreSize,
                         landscape: landscape
                     )
@@ -61,7 +61,6 @@ struct DisplayScoreboardView: View {
         label: String,
         score: Int,
         accent: Color,
-        glow: Color,
         scoreSize: CGFloat,
         landscape: Bool
     ) -> some View {
@@ -73,12 +72,11 @@ struct DisplayScoreboardView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
             Text("\(score)")
-                .font(.scoreHero(size: scoreSize))
+                .font(.scoreHero(size: scoreSize, style: fontStyle))
                 .foregroundStyle(accent)
                 .minimumScaleFactor(0.35)
                 .lineLimit(1)
                 .contentTransition(.numericText())
-                .shadow(color: glow, radius: landscape ? 22 : 18)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -86,29 +84,11 @@ struct DisplayScoreboardView: View {
     }
 
     private var fieldBackground: some View {
-        ZStack {
-            LinearGradient(
-                colors: [ScoreTheme.fieldTop, ScoreTheme.fieldBottom],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            HStack(spacing: 0) {
-                RadialGradient(
-                    colors: [theme.homeGlow, .clear],
-                    center: .center,
-                    startRadius: 20,
-                    endRadius: 220
-                )
-                RadialGradient(
-                    colors: [theme.awayGlow, .clear],
-                    center: .center,
-                    startRadius: 20,
-                    endRadius: 220
-                )
-            }
-            .blur(radius: 12)
-            .opacity(0.9)
-        }
+        LinearGradient(
+            colors: [ScoreTheme.fieldTop, ScoreTheme.fieldBottom],
+            startPoint: .top,
+            endPoint: .bottom
+        )
         .ignoresSafeArea()
     }
 }

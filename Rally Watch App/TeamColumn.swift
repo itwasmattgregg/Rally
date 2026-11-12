@@ -5,6 +5,7 @@ struct TeamColumn: View {
     let score: Int
     let accent: Color
     let glow: Color
+    var fontStyle: ScoreNumberFont = .rounded
     let reduced: Bool
     var highlighted: Bool = false
     let onUp: () -> Void
@@ -31,8 +32,8 @@ struct TeamColumn: View {
 
             Button(action: bump) {
                 Text("\(score)")
-                    .font(.scoreHero(size: scoreFontSize))
-                    .foregroundStyle(reduced ? ScoreTheme.ink.opacity(0.7) : ScoreTheme.ink)
+                    .font(.scoreHero(size: scoreFontSize, style: fontStyle))
+                    .foregroundStyle(reduced ? accent.opacity(0.55) : accent)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .contentTransition(.numericText(value: Double(score)))
                     .scaleEffect(pulse ? 1.08 : 1.0)

@@ -39,6 +39,9 @@ struct RallyContainerApp: App {
                 backgroundHost.extend(reason: "Rally score fan-out")
                 advertiser.broadcast(state)
             }
+            relay.onDisplayPrefs = { snapshot in
+                displayPrefs.applyFromWatch(snapshot)
+            }
             watchRelay = relay
         }
     }

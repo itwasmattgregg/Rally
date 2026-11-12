@@ -20,9 +20,9 @@ enum ScoreTheme {
 }
 
 extension Font {
-    /// Big, rounded numerals that read as the product.
-    static func scoreHero(size: CGFloat) -> Font {
-        .system(size: size, weight: .heavy, design: .rounded)
+    /// Big score numerals; design comes from the shared font preference.
+    static func scoreHero(size: CGFloat, style: ScoreNumberFont = .rounded) -> Font {
+        .system(size: size, weight: .heavy, design: style.design)
     }
 
     static func scoreLabel(_ style: Font.TextStyle = .caption2) -> Font {

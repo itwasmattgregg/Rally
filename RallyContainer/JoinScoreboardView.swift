@@ -24,13 +24,14 @@ struct JoinScoreboardView: View {
     private func connectedBoard(state: GameState) -> some View {
         GeometryReader { geo in
             let landscape = geo.size.width > geo.size.height
-            let expandedInset: CGFloat = landscape ? 150 : 188
+            let expandedInset: CGFloat = landscape ? 180 : 230
             let collapsedInset: CGFloat = 44
 
             ZStack(alignment: .bottom) {
                 DisplayScoreboardView(
                     state: state,
                     theme: displayPrefs.numberTheme,
+                    fontStyle: displayPrefs.numberFont,
                     bottomChromeInset: displayPrefs.chromeExpanded ? expandedInset : collapsedInset,
                     compactLabels: true
                 )
@@ -72,6 +73,13 @@ struct JoinScoreboardView: View {
                 theme: Binding(
                     get: { displayPrefs.numberTheme },
                     set: { displayPrefs.numberTheme = $0 }
+                )
+            )
+
+            NumberFontPicker(
+                fontStyle: Binding(
+                    get: { displayPrefs.numberFont },
+                    set: { displayPrefs.numberFont = $0 }
                 )
             )
         }

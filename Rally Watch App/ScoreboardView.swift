@@ -3,12 +3,15 @@ import SwiftUI
 struct ScoreboardView: View {
     @Environment(ScoreBoard.self) private var board
     @Environment(MatchSession.self) private var match
+    @Environment(WatchDisplayPreferences.self) private var displayPrefs
     @Environment(\.isLuminanceReduced) private var isLuminanceReduced
 
-    var crownEnabled = true
+    /// True only while this page is focused; still gated by `displayPrefs.crownAdjustsScore`.
+    var pageFocused = true
 
     @State private var confirmReset = false
     @State private var showNames = false
+    @State private var showOptions = false
     @State private var activeSide: Side = .home
     @State private var crownValue = 0.0
     @State private var lastCrownTick = 0.0
@@ -16,6 +19,12 @@ struct ScoreboardView: View {
     private enum Side {
         case home, away
     }
+
+    private var crownEnabled: Bool {
+        pageFocused && displayPrefs.crownAdjustsScore
+    }
+
+    private var theme: ScoreNumberTheme { displayPrefs.numberTheme }
 
     var body: some View {
         ZStack {
@@ -37,7 +46,7 @@ struct ScoreboardView: View {
                 } else if match.isRunning {
                     Text(MatchSession.clockString(match.elapsed))
                         .font(.system(.caption2, design: .rounded).weight(.bold))
-                        .foregroundStyle(isLuminanceReduced ? ScoreTheme.inkMuted : ScoreTheme.home)
+                        .foregroundStyle(isLuminanceReduced ? ScoreTheme.inkMuted : theme.home)
                         .padding(.bottom, 2)
                 }
 
@@ -45,8 +54,9 @@ struct ScoreboardView: View {
                     TeamColumn(
                         name: board.homeName,
                         score: board.homeScore,
-                        accent: ScoreTheme.home,
-                        glow: ScoreTheme.homeGlow,
+                        accent: theme.home,
+                        glow: theme.homeGlow,
+                        fontStyle: displayPrefs.numberFont,
                         reduced: isLuminanceReduced,
                         highlighted: activeSide == .home && !isLuminanceReduced,
                         onUp: {
@@ -64,8 +74,9 @@ struct ScoreboardView: View {
                     TeamColumn(
                         name: board.awayName,
                         score: board.awayScore,
-                        accent: ScoreTheme.away,
-                        glow: ScoreTheme.awayGlow,
+                        accent: theme.away,
+                        glow: theme.awayGlow,
+                        fontStyle: displayPrefs.numberFont,
                         reduced: isLuminanceReduced,
                         highlighted: activeSide == .away && !isLuminanceReduced,
                         onUp: {
@@ -170,7 +181,24 @@ struct ScoreboardView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Edit team names")
+
                 Spacer(minLength: 0)
+
+                Button {
+                    showOptions = true
+                } label: {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(isLuminanceReduced ? ScoreTheme.inkMuted : ScoreTheme.ink.opacity(0.7))
+                        .frame(width: 26, height: 22)
+                        .background(
+                            Capsule()
+                                .fill(ScoreTheme.resetFill)
+                                .overlay(Capsule().strokeBorder(ScoreTheme.hairline, lineWidth: 1))
+                        )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Options")
             }
         }
         .padding(.horizontal, 6)
@@ -179,6 +207,10 @@ struct ScoreboardView: View {
         .sheet(isPresented: $showNames) {
             TeamNamesSheet()
                 .environment(board)
+        }
+        .sheet(isPresented: $showOptions) {
+            WatchOptionsView()
+                .environment(displayPrefs)
         }
     }
 
@@ -201,13 +233,13 @@ struct ScoreboardView: View {
             if !isLuminanceReduced {
                 HStack(spacing: 0) {
                     RadialGradient(
-                        colors: [ScoreTheme.homeGlow, .clear],
+                        colors: [theme.homeGlow, .clear],
                         center: .center,
                         startRadius: 4,
                         endRadius: 70
                     )
                     RadialGradient(
-                        colors: [ScoreTheme.awayGlow, .clear],
+                        colors: [theme.awayGlow, .clear],
                         center: .center,
                         startRadius: 4,
                         endRadius: 70
@@ -225,4 +257,5 @@ struct ScoreboardView: View {
     ScoreboardView()
         .environment(ScoreBoard())
         .environment(MatchSession())
+        .environment(WatchDisplayPreferences())
 }

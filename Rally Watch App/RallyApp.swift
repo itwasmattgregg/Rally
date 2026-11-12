@@ -4,12 +4,19 @@ import SwiftUI
 struct RallyApp: App {
     @State private var board = ScoreBoard()
     @State private var match = MatchSession()
+    @State private var displayPrefs = WatchDisplayPreferences()
 
     var body: some Scene {
         WindowGroup {
             MatchPager()
                 .environment(board)
                 .environment(match)
+                .environment(displayPrefs)
+                .task {
+                    displayPrefs.bindPublisher { snapshot in
+                        board.publishDisplayPrefs(snapshot)
+                    }
+                }
         }
     }
 }
@@ -20,7 +27,7 @@ private struct MatchPager: View {
 
     var body: some View {
         TabView(selection: $page) {
-            ScoreboardView(crownEnabled: page == 0)
+            ScoreboardView(pageFocused: page == 0)
                 .tag(0)
             MatchSessionView()
                 .tag(1)

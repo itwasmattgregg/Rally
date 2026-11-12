@@ -11,13 +11,14 @@ struct HostScoreboardView: View {
         GeometryReader { geo in
             let landscape = geo.size.width > geo.size.height
             // Reserve space under the board so QR/session chrome never covers numerals.
-            let expandedInset: CGFloat = landscape ? 200 : 248
+            let expandedInset: CGFloat = landscape ? 230 : 290
             let collapsedInset: CGFloat = 44
 
             ZStack(alignment: .bottom) {
                 DisplayScoreboardView(
                     state: authority.state,
                     theme: displayPrefs.numberTheme,
+                    fontStyle: displayPrefs.numberFont,
                     bottomChromeInset: displayPrefs.chromeExpanded ? expandedInset : collapsedInset,
                     compactLabels: true
                 )
@@ -73,6 +74,13 @@ struct HostScoreboardView: View {
                 theme: Binding(
                     get: { displayPrefs.numberTheme },
                     set: { displayPrefs.numberTheme = $0 }
+                )
+            )
+
+            NumberFontPicker(
+                fontStyle: Binding(
+                    get: { displayPrefs.numberFont },
+                    set: { displayPrefs.numberFont = $0 }
                 )
             )
         }

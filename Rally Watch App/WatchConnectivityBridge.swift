@@ -15,6 +15,9 @@ final class WatchConnectivityBridge: NSObject {
 
     var canRelay: Bool { isActivated && isCompanionAppInstalled }
 
+    /// Retained so theme/font can flush once WC activates (never read from phone).
+    private var pendingDisplayPrefs: ScoreDisplayPrefsSnapshot?
+
     override init() {
         super.init()
         activateIfPossible()
@@ -99,6 +102,49 @@ final class WatchConnectivityBridge: NSObject {
         }
     }
 
+    /// One-way Watch → phone theme/font. Phone applies locally and must never echo prefs back.
+    func publishDisplayPrefs(_ snapshot: ScoreDisplayPrefsSnapshot) {
+        pendingDisplayPrefs = snapshot
+        flushPendingDisplayPrefs()
+    }
+
+    private func flushPendingDisplayPrefs() {
+        guard let snapshot = pendingDisplayPrefs else { return }
+        guard WCSession.isSupported() else { return }
+        let session = WCSession.default
+        guard session.activationState == .activated else { return }
+        refreshCompanionState()
+        guard isCompanionAppInstalled else { return }
+        do {
+            let data = try JSONEncoder.rally.encode(snapshot)
+            let payload: [String: Any] = [
+                RallyWC.kindKey: RallyWC.kindDisplayPrefs,
+                RallyWC.prefsKey: data
+            ]
+            if session.isReachable {
+                session.sendMessage(payload, replyHandler: { _ in }, errorHandler: { [weak self] error in
+                    let message = error.localizedDescription
+                    Task { @MainActor [weak self] in
+                        self?.lastError = message
+                        self?.queueDisplayPrefs(data)
+                    }
+                })
+            } else {
+                queueDisplayPrefs(data)
+            }
+        } catch {
+            lastError = error.localizedDescription
+        }
+    }
+
+    /// Queued delivery so prefs do not clobber a pending score applicationContext.
+    private func queueDisplayPrefs(_ prefsData: Data) {
+        WCSession.default.transferUserInfo([
+            RallyWC.kindKey: RallyWC.kindDisplayPrefs,
+            RallyWC.prefsKey: prefsData
+        ])
+    }
+
     private func queueEvent(_ eventData: Data) {
         do {
             try WCSession.default.updateApplicationContext([
@@ -136,18 +182,21 @@ extension WatchConnectivityBridge: WCSessionDelegate {
             if let message {
                 self.lastError = message
             }
+            self.flushPendingDisplayPrefs()
         }
     }
 
     nonisolated func sessionReachabilityDidChange(_ session: WCSession) {
         Task { @MainActor in
             self.refreshCompanionState()
+            self.flushPendingDisplayPrefs()
         }
     }
 
     nonisolated func sessionCompanionAppInstalledDidChange(_ session: WCSession) {
         Task { @MainActor in
             self.refreshCompanionState()
+            self.flushPendingDisplayPrefs()
         }
     }
 

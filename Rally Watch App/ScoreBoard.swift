@@ -111,6 +111,12 @@ final class ScoreBoard {
         phoneOutOfRange = bridge.canRelay && !bridge.isReachable
     }
 
+    /// One-way theme/font push for phone/iPad displays. Never reads prefs back from phone.
+    func publishDisplayPrefs(_ snapshot: ScoreDisplayPrefsSnapshot) {
+        bridge.publishDisplayPrefs(snapshot)
+        refreshReachability()
+    }
+
     private func setLabel(sideId: String, label: String) {
         state.setLabel(sideId: sideId, label: label)
         persist()
