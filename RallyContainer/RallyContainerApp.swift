@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 @main
 struct RallyContainerApp: App {
@@ -35,11 +36,19 @@ struct RallyContainerApp: App {
     private func configureRelay() {
         if watchRelay == nil {
             let relay = PhoneWatchRelay(authority: authority)
+            // WC delivery can wake a suspended phone; extend + reassert Host path.
+            relay.onWatchWake = {
+                backgroundHost.extend(reason: "Rally WC wake")
+                if !advertiser.isAdvertising {
+                    advertiser.start(authority: authority)
+                }
+            }
             relay.onStateChanged = { state in
                 backgroundHost.extend(reason: "Rally score fan-out")
                 advertiser.broadcast(state)
             }
             relay.onDisplayPrefs = { snapshot in
+                backgroundHost.extend(reason: "Rally display prefs")
                 displayPrefs.applyFromWatch(snapshot)
             }
             watchRelay = relay
@@ -47,29 +56,35 @@ struct RallyContainerApp: App {
     }
 
     private func applyMode(_ newMode: CompanionRootView.Mode) {
+        // iPad display stays lit; phone Host is allowed to lock on the floor.
+        UIApplication.shared.isIdleTimerDisabled = (newMode == .join)
+
         switch newMode {
         case .host:
             browser.disconnect()
             browser.stopBrowsing()
             authority.bootstrapHostIfNeeded()
             advertiser.start(authority: authority)
-            backgroundHost.extend(reason: "Rally host session")
+            backgroundHost.start()
         case .join:
             advertiser.stop()
-            backgroundHost.end()
+            backgroundHost.stop()
             browser.startBrowsing()
         }
     }
 
     private func handleScenePhase(_ phase: ScenePhase) {
-        guard mode == .host else { return }
         switch phase {
         case .active:
-            if !advertiser.isAdvertising {
-                advertiser.start(authority: authority)
+            if mode == .host {
+                if !advertiser.isAdvertising {
+                    advertiser.start(authority: authority)
+                }
+                backgroundHost.extend(reason: "Rally host foreground")
             }
-            backgroundHost.extend(reason: "Rally host foreground")
+            UIApplication.shared.isIdleTimerDisabled = (mode == .join)
         case .inactive, .background:
+            guard mode == .host else { return }
             backgroundHost.extend(reason: "Rally host background")
             if !advertiser.isAdvertising {
                 advertiser.start(authority: authority)

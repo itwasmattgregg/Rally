@@ -28,6 +28,10 @@
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Rally shares the live scoreboard with nearby iPads over your local network — no internet required.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 	<key>UIDeviceFamily</key>
 	<array>
 		<integer>1</integer>

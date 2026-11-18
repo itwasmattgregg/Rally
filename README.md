@@ -11,7 +11,7 @@ Watch → WatchConnectivity → iPhone (authority + Bonjour relay) → Network.f
 - Phone/iPad UI is **display-only** (no scoring controls).
 - No internet / cloud on court.
 - Background on Watch via **HKWorkout** session.
-- Phone Host uses a short background task so score fan-out can continue briefly after the screen locks.
+- Phone Host keeps a sustained background keepalive (silent audio + refreshed background tasks) so Watch → Bonjour fan-out continues while the phone is locked on the floor.
 
 ## Court display setup (Bonjour)
 
@@ -29,7 +29,7 @@ Bonjour is the local discovery layer — no accounts, no Wi‑Fi password sharin
 1. **Phone → Host** (default on iPhone). You should see a big 4-letter code (e.g. `K7MP`) and “Broadcasting”.
 2. **iPad → Join** (default on iPad). Type that same code and tap **Join**, or tap the matching row under **Nearby**.
 3. When status shows **Connected / Live**, scores from the Watch appear on the iPad.
-4. Score on the Watch as usual. Keep the Rally app open (or recently used) on the phone — it relays Watch → iPad. The phone may lock; leave Rally in Host mode so background hosting can keep the relay alive briefly.
+4. Score on the Watch as usual. Leave Rally in **Host** on the phone — it may lock / screen-off on the floor and still relay Watch → iPad. Leave the iPad in **Join** so the display stays awake.
 
 ### What the code is
 
@@ -44,7 +44,7 @@ Bonjour is the local discovery layer — no accounts, no Wi‑Fi password sharin
 | No Local Network prompt / empty Nearby | Settings → Rally → Local Network On; force-quit and reopen Rally on both devices |
 | Wrong code under Nearby | Ignore Nearby; type the code shown on the phone Host screen |
 | Join stuck on “Waiting…” | Confirm phone shows Host + Broadcasting; same Wi‑Fi/BT; Local Network allowed |
-| iPad connected, scores freeze after phone lock | Bring phone to foreground once, keep Rally Host open; Watch still scores alone |
+| iPad connected, scores freeze after phone lock | Confirm phone is still in Host (not force-quit); unlock once to re-grant Local Network / audio if prompted; Watch still scores alone |
 
 ## Open in Xcode
 

@@ -27,6 +27,8 @@ nonisolated private struct WCReplyHandler: @unchecked Sendable {
 @Observable
 final class PhoneWatchRelay: NSObject {
     private let authority: PhoneSessionAuthority
+    /// Fired on every inbound WC payload so Host can extend background / reassert Bonjour.
+    var onWatchWake: (() -> Void)?
     var onStateChanged: ((GameState) -> Void)?
     /// Theme/font from Watch. Phone applies locally and must not echo back.
     var onDisplayPrefs: ((ScoreDisplayPrefsSnapshot) -> Void)?
@@ -45,6 +47,8 @@ final class PhoneWatchRelay: NSObject {
     }
 
     private func handle(_ payload: IncomingWCPayload, reply: WCReplyHandler?) {
+        onWatchWake?()
+
         // Events are the scoring path.
         if let data = payload.eventData,
            let event = try? JSONDecoder.rally.decode(ScoreEvent.self, from: data) {
