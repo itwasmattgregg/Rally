@@ -46,13 +46,19 @@ final class CompanionDisplayPreferences {
         }
     }
 
-    /// Apply Watch-pushed theme/font. Local chrome state is untouched.
-    func applyFromWatch(_ snapshot: ScoreDisplayPrefsSnapshot) {
+    /// Apply remote theme/font (Watch → phone, or Host → Join over Bonjour).
+    /// Local chrome expand/collapse is untouched. Never echoes back to Watch.
+    func applyRemote(_ snapshot: ScoreDisplayPrefsSnapshot) {
         if numberTheme != snapshot.numberTheme {
             numberTheme = snapshot.numberTheme
         }
         if numberFont != snapshot.numberFont {
             numberFont = snapshot.numberFont
         }
+    }
+
+    /// Watch → phone path (one-way). Prefer `applyRemote` for new call sites.
+    func applyFromWatch(_ snapshot: ScoreDisplayPrefsSnapshot) {
+        applyRemote(snapshot)
     }
 }

@@ -22,6 +22,8 @@ enum RallyWire {
         var sessionCode: String?
         var gameId: String?
         var state: GameState?
+        /// Host theme/font for Join mirrors. Optional for older peers; never sent to Watch.
+        var displayPrefs: ScoreDisplayPrefsSnapshot?
         var reason: String?
     }
 

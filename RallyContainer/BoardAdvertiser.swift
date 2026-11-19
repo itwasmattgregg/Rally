@@ -2,7 +2,7 @@ import Foundation
 import Network
 import Observation
 
-/// Bonjour / Network.framework advertiser on the phone. Fans GameState to connected iPads.
+/// Bonjour / Network.framework advertiser on the phone. Fans GameState + display prefs to connected iPads.
 @MainActor
 @Observable
 final class BoardAdvertiser {
@@ -13,6 +13,8 @@ final class BoardAdvertiser {
     private var listener: NWListener?
     private var connections: [ObjectIdentifier: PeerConnection] = [:]
     private var authority: PhoneSessionAuthority?
+    /// Latest Host theme/font — included on connect snapshots and score updates.
+    private var displayPrefs = ScoreDisplayPrefsSnapshot.default
 
     func start(authority: PhoneSessionAuthority) {
         self.authority = authority
@@ -72,21 +74,43 @@ final class BoardAdvertiser {
         isAdvertising = false
     }
 
+    /// Keep Host theme/font for connect-time snapshots. Does not send by itself.
+    func setDisplayPrefs(_ prefs: ScoreDisplayPrefsSnapshot) {
+        displayPrefs = prefs
+    }
+
+    /// Push scores (and current theme/font) to every connected Join.
     func broadcast(_ state: GameState) {
         refreshTXT()
-        let envelope = RallyWire.Envelope(
-            type: .update,
-            protocolVersion: RallyWire.protocolVersion,
-            sessionCode: authority?.sessionCode,
-            gameId: state.gameId,
-            state: state,
-            reason: nil
-        )
+        let envelope = makeEnvelope(type: .update, state: state)
         guard let data = try? RallyWire.encode(envelope) else { return }
         let frame = RallyWire.frame(data)
         for peer in connections.values {
             peer.send(frame)
         }
+    }
+
+    /// Push theme/font immediately when Host prefs change (scores unchanged).
+    func broadcastDisplayPrefs() {
+        guard let authority else { return }
+        let envelope = makeEnvelope(type: .update, state: authority.state)
+        guard let data = try? RallyWire.encode(envelope) else { return }
+        let frame = RallyWire.frame(data)
+        for peer in connections.values {
+            peer.send(frame)
+        }
+    }
+
+    private func makeEnvelope(type: RallyWire.MessageType, state: GameState) -> RallyWire.Envelope {
+        RallyWire.Envelope(
+            type: type,
+            protocolVersion: RallyWire.protocolVersion,
+            sessionCode: authority?.sessionCode,
+            gameId: state.gameId,
+            state: state,
+            displayPrefs: displayPrefs,
+            reason: nil
+        )
     }
 
     private func accept(_ connection: NWConnection) {
@@ -114,14 +138,7 @@ final class BoardAdvertiser {
         peer.start()
 
         if let authority {
-            let hello = RallyWire.Envelope(
-                type: .snapshot,
-                protocolVersion: RallyWire.protocolVersion,
-                sessionCode: authority.sessionCode,
-                gameId: authority.state.gameId,
-                state: authority.state,
-                reason: nil
-            )
+            let hello = makeEnvelope(type: .snapshot, state: authority.state)
             if let data = try? RallyWire.encode(hello) {
                 peer.send(RallyWire.frame(data))
             }
@@ -142,6 +159,7 @@ final class BoardAdvertiser {
                         sessionCode: authority.sessionCode,
                         gameId: authority.state.gameId,
                         state: nil,
+                        displayPrefs: nil,
                         reason: "Wrong session code"
                     )
                     if let data = try? RallyWire.encode(reject) {
@@ -150,14 +168,8 @@ final class BoardAdvertiser {
                     peer.cancel()
                     return
                 }
-                let snap = RallyWire.Envelope(
-                    type: .snapshot,
-                    protocolVersion: RallyWire.protocolVersion,
-                    sessionCode: authority.sessionCode,
-                    gameId: authority.state.gameId,
-                    state: authority.state,
-                    reason: nil
-                )
+                // Fresh Join gets scores + current Host theme/font immediately.
+                let snap = makeEnvelope(type: .snapshot, state: authority.state)
                 if let data = try? RallyWire.encode(snap) {
                     peer.send(RallyWire.frame(data))
                 }

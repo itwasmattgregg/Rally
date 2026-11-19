@@ -29,11 +29,25 @@ struct HostScoreboardView: View {
         }
         .onAppear {
             authority.bootstrapHostIfNeeded()
+            advertiser.setDisplayPrefs(displayPrefs.snapshot)
             advertiser.start(authority: authority)
+            // Seed any already-connected Joins with current theme/font.
+            advertiser.broadcastDisplayPrefs()
         }
         .onChange(of: authority.state.revision) { _, _ in
             advertiser.broadcast(authority.state)
         }
+        .onChange(of: displayPrefs.numberTheme) { _, _ in
+            pushDisplayPrefs()
+        }
+        .onChange(of: displayPrefs.numberFont) { _, _ in
+            pushDisplayPrefs()
+        }
+    }
+
+    private func pushDisplayPrefs() {
+        advertiser.setDisplayPrefs(displayPrefs.snapshot)
+        advertiser.broadcastDisplayPrefs()
     }
 
     private var hostChromeContent: some View {

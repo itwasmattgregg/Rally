@@ -16,6 +16,8 @@ final class BoardBrowser {
 
     private(set) var nearby: [NearbyBoard] = []
     private(set) var state: GameState?
+    /// Latest Host theme/font from Bonjour frames (nil until first prefs-bearing snapshot/update).
+    private(set) var displayPrefs: ScoreDisplayPrefsSnapshot?
     private(set) var isBrowsing = false
     private(set) var isConnected = false
     private(set) var isReconnecting = false
@@ -181,6 +183,7 @@ final class BoardBrowser {
             sessionCode: code,
             gameId: preferredGameId,
             state: nil,
+            displayPrefs: nil,
             reason: nil
         )
         guard let data = try? RallyWire.encode(envelope) else { return }
@@ -203,6 +206,7 @@ final class BoardBrowser {
             sessionCode: preferredCode,
             gameId: preferredGameId,
             state: nil,
+            displayPrefs: nil,
             reason: nil
         )
         guard let data = try? RallyWire.encode(envelope) else { return }
@@ -245,6 +249,9 @@ final class BoardBrowser {
         guard let envelope = try? RallyWire.decode(data) else { return }
         switch envelope.type {
         case .snapshot, .update:
+            if let prefs = envelope.displayPrefs {
+                displayPrefs = prefs
+            }
             if let state = envelope.state {
                 self.state = state
                 preferredGameId = state.gameId

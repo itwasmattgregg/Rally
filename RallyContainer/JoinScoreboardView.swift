@@ -18,6 +18,16 @@ struct JoinScoreboardView: View {
         }
         .onAppear {
             browser.startBrowsing()
+            if let prefs = browser.displayPrefs {
+                displayPrefs.applyRemote(prefs)
+            }
+        }
+        .onChange(of: browser.displayPrefs) { _, prefs in
+            // Host is authoritative over theme/font while joined; local Join pickers
+            // still work until the next Host frame overwrites them.
+            if let prefs {
+                displayPrefs.applyRemote(prefs)
+            }
         }
     }
 

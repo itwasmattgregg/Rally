@@ -40,16 +40,22 @@ struct RallyContainerApp: App {
             relay.onWatchWake = {
                 backgroundHost.extend(reason: "Rally WC wake")
                 if !advertiser.isAdvertising {
+                    advertiser.setDisplayPrefs(displayPrefs.snapshot)
                     advertiser.start(authority: authority)
                 }
             }
             relay.onStateChanged = { state in
                 backgroundHost.extend(reason: "Rally score fan-out")
+                advertiser.setDisplayPrefs(displayPrefs.snapshot)
                 advertiser.broadcast(state)
             }
             relay.onDisplayPrefs = { snapshot in
                 backgroundHost.extend(reason: "Rally display prefs")
+                // Watch → phone only; never echo prefs back to Watch.
                 displayPrefs.applyFromWatch(snapshot)
+                // Fan theme/font out to Joined iPads over Bonjour.
+                advertiser.setDisplayPrefs(displayPrefs.snapshot)
+                advertiser.broadcastDisplayPrefs()
             }
             watchRelay = relay
         }
@@ -64,6 +70,7 @@ struct RallyContainerApp: App {
             browser.disconnect()
             browser.stopBrowsing()
             authority.bootstrapHostIfNeeded()
+            advertiser.setDisplayPrefs(displayPrefs.snapshot)
             advertiser.start(authority: authority)
             backgroundHost.start()
         case .join:
