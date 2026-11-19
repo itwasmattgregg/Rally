@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// iPhone display-only host: live scores + grabber drawer for QR/session chrome + Bonjour advertise.
+/// iPhone display-only host: live scores + trailing-edge swipe chrome (QR/themes) + Bonjour advertise.
 struct HostScoreboardView: View {
     @Environment(PhoneSessionAuthority.self) private var authority
     @Environment(BoardAdvertiser.self) private var advertiser
@@ -8,18 +8,14 @@ struct HostScoreboardView: View {
     @Binding var mode: CompanionRootView.Mode
 
     var body: some View {
-        GeometryReader { geo in
-            let landscape = geo.size.width > geo.size.height
-            // Reserve space under the board so QR/session chrome never covers numerals.
-            let expandedInset: CGFloat = landscape ? 230 : 290
-            let collapsedInset: CGFloat = 44
-
-            ZStack(alignment: .bottom) {
+        GeometryReader { _ in
+            // Scores stay full-bleed; session chrome overlays from the trailing edge (no bottom inset).
+            ZStack {
                 DisplayScoreboardView(
                     state: authority.state,
                     theme: displayPrefs.numberTheme,
                     fontStyle: displayPrefs.numberFont,
-                    bottomChromeInset: displayPrefs.chromeExpanded ? expandedInset : collapsedInset,
+                    bottomChromeInset: 0,
                     compactLabels: true
                 )
 

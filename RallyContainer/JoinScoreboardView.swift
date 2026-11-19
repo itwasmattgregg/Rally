@@ -22,17 +22,14 @@ struct JoinScoreboardView: View {
     }
 
     private func connectedBoard(state: GameState) -> some View {
-        GeometryReader { geo in
-            let landscape = geo.size.width > geo.size.height
-            let expandedInset: CGFloat = landscape ? 180 : 230
-            let collapsedInset: CGFloat = 44
-
-            ZStack(alignment: .bottom) {
+        GeometryReader { _ in
+            // Full-bleed scores; session chrome is a trailing-edge overlay (no bottom inset/grabber).
+            ZStack {
                 DisplayScoreboardView(
                     state: state,
                     theme: displayPrefs.numberTheme,
                     fontStyle: displayPrefs.numberFont,
-                    bottomChromeInset: displayPrefs.chromeExpanded ? expandedInset : collapsedInset,
+                    bottomChromeInset: 0,
                     compactLabels: true
                 )
 

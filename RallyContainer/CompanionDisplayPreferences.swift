@@ -16,7 +16,7 @@ final class CompanionDisplayPreferences {
         didSet { UserDefaults.standard.set(numberFont.rawValue, forKey: Self.fontKey) }
     }
 
-    /// When false, QR/session chrome tucks away so scores dominate.
+    /// When false, trailing-edge session chrome is hidden so scores are full-bleed.
     var chromeExpanded: Bool {
         didSet { UserDefaults.standard.set(chromeExpanded, forKey: Self.chromeKey) }
     }

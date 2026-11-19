@@ -7,7 +7,8 @@ struct DisplayScoreboardView: View {
     let state: GameState
     var theme: ScoreNumberTheme = .mintEmber
     var fontStyle: ScoreNumberFont = .rounded
-    /// Extra bottom reserve when the session drawer is expanded (points).
+    /// Optional bottom reserve (points). Companion Host/Join pass 0 so scores stay full-bleed;
+    /// session chrome overlays from the trailing edge instead of eating score height.
     var bottomChromeInset: CGFloat = 0
     var compactLabels = false
 
