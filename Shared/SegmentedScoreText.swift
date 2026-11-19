@@ -41,6 +41,8 @@ struct ScoreHeroText: View {
                     color: color,
                     ghostOpacity: ghostOpacity
                 )
+                // Drawn segments ignore Text minimumScaleFactor — parent must cap width.
+                .fixedSize(horizontal: true, vertical: false)
             } else {
                 Text("\(max(value, 0))")
                     .font(.scoreHero(size: size, style: style))

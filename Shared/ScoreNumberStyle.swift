@@ -82,8 +82,26 @@ enum ScoreNumberFont: String, CaseIterable, Identifiable, Codable, Sendable {
     var usesSegmentedDigits: Bool { self == .segmented }
 
     /// Aspect width÷height per digit — used to size scores without clipping.
+    /// Segmented digits are narrower alone, but inter-digit gaps make runs wider.
     var digitAspect: CGFloat {
         usesSegmentedDigits ? 0.58 : 0.74
+    }
+
+    /// Total width÷height for a score with `digitCount` glyphs (includes segmented gaps).
+    func scoreAspect(digitCount: Int) -> CGFloat {
+        let n = max(digitCount, 1)
+        if usesSegmentedDigits {
+            // Each digit is 0.58×height; HStack spacing is 0.12×height between digits.
+            return CGFloat(n) * 0.58 + CGFloat(max(n - 1, 0)) * 0.12
+        }
+        return CGFloat(n) * digitAspect
+    }
+
+    /// Max digit height that fits inside `maxWidth` for `digitCount` glyphs.
+    func maxDigitHeight(digitCount: Int, maxWidth: CGFloat) -> CGFloat {
+        let aspect = scoreAspect(digitCount: digitCount)
+        guard aspect > 0 else { return maxWidth }
+        return maxWidth / aspect
     }
 
     /// System font design for non-segmented styles; segmented falls back to mono in text previews.
